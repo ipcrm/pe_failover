@@ -1,12 +1,13 @@
 # Dump a PE database with a cron job and a script.
 define pe_failover::db_dump (
-  $db_name          = $title,
-  $pg_dump_command  = $pe_failover::params::pg_dump_command,
-  $dump_path        = $pe_failover::params::dump_path,
-  $script_directory = $pe_failover::params::script_directory,
-  $minute           = $pe_failover::params::minute,
-  $hour             = $pe_failover::params::hour,
-  $monthday         = $pe_failover::params::monthday,
+  $db_name           = $title,
+  $pg_dump_command   = $pe_failover::params::pg_dump_command,
+  $dump_path         = $pe_failover::params::dump_path,
+  $script_directory  = $pe_failover::params::script_directory,
+  $minute            = $pe_failover::params::minute,
+  $hour              = $pe_failover::params::hour,
+  $monthday          = $pe_failover::params::monthday,
+  $timestamp_command = $pe_failover::params::timestamp_command,
 ) {
 
   validate_string($pg_dump_command)
@@ -25,6 +26,15 @@ define pe_failover::db_dump (
     before  => Cron["${db_name}_db_dump"],
   }
 
+  file{"${dump_path}/${db_name}":
+    ensure => directory,
+    owner  => 'pe-postgres',
+    group  => 'pe-puppet',
+    mode   => '0775',
+    require  => File['dump_directory'],
+  }
+
+
   cron { "${db_name}_db_dump":
     ensure   => present,
     command  => "${script_directory}/dump_${db_name}.sh",
@@ -32,7 +42,7 @@ define pe_failover::db_dump (
     minute   => $minute,
     hour     => $hour,
     monthday => $monthday,
-    require  => File['dump_directory'],
+    require  => File["${dump_path}/${db_name}"],
   }
 
 }

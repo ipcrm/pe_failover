@@ -1,0 +1,51 @@
+#!/bin/bash
+# Managed by Puppet
+# Restore Database exports created on master
+
+manage_service() {
+  logger "Attempting to ${1} service ${2}..."
+  systemctl $1 $2 
+  if [ $? -ne 0 ]; then
+    echo "Error! Failed to ${1} service ${2}; exiting!"
+    exit 1
+  fi
+  logger "Completed ${1} on service ${2}"
+}
+
+
+# Main
+DUMP_LOCATION="<%= @dump_path %>"
+
+#Stop Services
+manage_service 'stop' pe-orchestration-services.service
+manage_service 'stop' pe-nginx.service
+manage_service 'stop' pe-console-services.service
+manage_service 'stop' pe-puppetserver.service
+
+for db in $(find $DUMP_LOCATION/* -maxdepth 1 -type d)
+do
+  REST_FILE=$(ls -tr $db/*.bin|tail -1)
+  if [ -f $REST_FILE ]; then
+    DB_NAME=$(basename $db)
+    logger "Dropping database ${DB_NAME}"
+    sudo -u pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/dropdb ${DB_NAME}"
+    if [ $? -ne 0 ]; then
+      logger "Failed to drop database ${DB_NAME}, exiting with services DOWN!!!"
+      exit 2
+    fi
+
+    logger "Restoring database ${DB_NAME}"
+    su - pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/psql < $REST_FILE"
+    if [ $? -ne 0 ]; then
+      logger "Failed to restore database ${DB_NAME}, exiting with services DOWN!!!"
+      exit 3
+    fi
+    logger "Succesfully restored database ${DB_NAME}"
+  fi
+done
+
+#Start Services
+manage_service 'start' pe-orchestration-services.service
+manage_service 'start' pe-nginx.service
+manage_service 'start' pe-console-services.service
+manage_service 'start' pe-puppetserver.service

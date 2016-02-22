@@ -1,28 +1,27 @@
 class pe_failover::active (
   String $passive_master,
-  String $rsync_user        = $pe_failover::params::rsync_user,
-  String $rsync_user_ssh_id = $pe_failover::params::rsync_user_ssh_id,
-  String $rsync_ssl_dir     = $pe_failover::params::rsync_ssl_dir,
-  String $rsync_command     = $pe_failover::params::rsync_command,
-  $incron_ssl_condition     = $pe_failover::params::incron_ssl_condition,
-  String $script_directory  = $pe_failover::params::script_directory,
-  Array $pe_bkup_dbs        = ['pe-rbac','pe-classifier'],
-  String $minute            = $pe_failover::params::minute,
-  String $hour              = $pe_failover::params::hour,
-  String $monthday          = $pe_failover::params::monthday,
-  String $dump_path         = $pe_failover::params::dump_path,
+  String $rsync_user            = $pe_failover::params::rsync_user,
+  String $rsync_user_ssh_id     = $pe_failover::params::rsync_user_ssh_id,
+  String $rsync_ssl_dir         = $pe_failover::params::rsync_ssl_dir,
+  String $rsync_command         = $pe_failover::params::rsync_command,
+  String $incron_ssl_condition  = $pe_failover::params::incron_ssl_condition,
+  String $incron_nc_condition   = $pe_failover::params::incron_nc_condition,
+  String $script_directory      = $pe_failover::params::script_directory,
+  String $pe_failover_directory = $pe_failover::params::pe_failover_directory,
+  Array $pe_bkup_dbs            = ['pe-rbac'],
+  String $minute                = $pe_failover::params::minute,
+  String $hour                  = $pe_failover::params::hour,
+  String $monthday              = $pe_failover::params::monthday,
+  String $sync_minute           = $pe_failover::params::sync_minute,
+  String $sync_hour             = $pe_failover::params::sync_hour,
+  String $sync_monthday         = $pe_failover::params::sync_monthday,
+  String $dump_path             = $pe_failover::params::dump_path,
+  String $nc_dump_path          = $pe_failover::params::nc_dump_path,
 ) inherits pe_failover::params {
 
   # Manage incrond and scripts that send certs to the passive master when any
   # changes are made, e.g. for new agents, revoked certs, etc...
   ensure_packages(['rsync','incron'])
-
-  file { $script_directory:
-    ensure => directory,
-    owner  => 'pe-puppet',
-    group  => 'pe-puppet',
-    mode   => '0750',
-  }
 
   file { 'sync_script':
     ensure  => file,
@@ -38,17 +37,40 @@ class pe_failover::active (
     require => Package['incron'],
   }
 
+  file { 'sync_nc_dumps':
+    ensure  => file,
+    path    => "${script_directory}/sync_nc_dumps.sh",
+    mode    => '0750',
+    content => template('pe_failover/sync_nc_dumps.sh.erb'),
+  }
+
+  file { '/etc/incron.d/sync_nc_dumps':
+    ensure  => file,
+    mode    => '0744',
+    content => "${incron_nc_condition} ${script_directory}/sync_nc_dumps.sh",
+    require => Package['incron'],
+  }
+
   service { 'incrond':
     ensure    => running,
     enable    => true,
     subscribe => File['/etc/incron.d/sync_certs'],
   }
 
-  file { 'dump_directory':
-      path  => $dump_path,
-      owner => 'pe-postgres',
-      group => 'pe-puppet',
-      mode  => '0770',
+  file { 'sync_db_script':
+    ensure  => file,
+    path    => "${script_directory}/sync_dbs.sh",
+    mode    => '0750',
+    content => template('pe_failover/sync_dbs.sh.erb'),
+  }
+
+  cron { 'db_sync':
+    ensure   => present,
+    command  => "${script_directory}/sync_dbs.sh",
+    user     => 'root',
+    minute   => $sync_minute,
+    hour     => $sync_hour,
+    monthday => $sync_monthday,
   }
 
   $pe_bkup_dbs.each |$db| {
@@ -57,6 +79,22 @@ class pe_failover::active (
       hour     => $hour,
       monthday => $monthday,
     }
+  }
+
+  file { 'nc_dump_script':
+    ensure  => file,
+    path    => "${script_directory}/nc_dump.sh",
+    mode    => '0750',
+    content => template('pe_failover/nc_dump.sh.erb'),
+  }
+
+  cron { 'nc_dump':
+    ensure   => present,
+    command  => "${script_directory}/nc_dump.sh",
+    user     => 'root',
+    minute   => $sync_minute,
+    hour     => $sync_hour,
+    monthday => $sync_monthday,
   }
 
 }

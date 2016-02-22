@@ -1,20 +1,28 @@
 class pe_failover::params {
-  $rsync_user           = 'pe-puppet'
-  $rsync_user_ssh_id    = '/opt/puppetlabs/server/data/puppetserver/.ssh/puppet_ca_id_rsa'
-  $rsync_ssl_dir        = '/etc/puppetlabs/puppet/ssl/ca/'
-  $rsync_command        = 'rsync -au --delete'
-  $incron_ssl_condition = '/etc/puppetlabs/puppet/ssl/ca/signed IN_CREATE,IN_DELETE,IN_MODIFY'
-  $pe_failover_directory     = '/opt/pe_failover'
-  $script_directory     = '/opt/pe_failover/scripts'
+  $rsync_user            = 'root'
+  $rsync_user_ssh_id     = '/root/.ssh/pe_failover_id_rsa'
+  $rsync_ssl_dir         = '/etc/puppetlabs/puppet/ssl/ca/'
+  $rsync_command         = 'rsync -au --delete'
+  $incron_ssl_condition  = '/etc/puppetlabs/puppet/ssl/ca/signed IN_CREATE,IN_DELETE,IN_MODIFY'
+  $incron_nc_condition   = '/opt/pe_failover/nc_dumps/ IN_CREATE,IN_DELETE,IN_MODIFY'
+  $pe_failover_directory = '/opt/pe_failover'
+  $script_directory      = '/opt/pe_failover/scripts'
 
   #Values used for pgsql dump & restore...
-  $pg_bin_directory         = '/opt/puppetlabs/server/bin'
-  $dump_path                = "${pe_failover_directory}/dumps"
-  $pg_dump_command          = "/usr/bin/sudo -u pe-postgres ${pg_bin_directory}/pg_dump -C -Fc"
-  $timestamp_command        = '`/bin/date +"%Y-%m-%d-%H%M"`'
-  $hour                     = '*'
-  $minute                   = '*/15'
-  $monthday                 = '*'
+  $pg_bin_directory      = '/opt/puppetlabs/server/bin'
+  $dump_path             = '/opt/pe_failover/dumps'
+  $pg_dump_command       = "/usr/bin/sudo -u pe-postgres ${pg_bin_directory}/pg_dump -C"
+  $timestamp_command     = '`/bin/date +"%Y-%m-%d-%H%M"`'
+  $hour                  = '*'
+  $minute                = '*/15'
+  $monthday              = '*'
+  $sync_hour             = '*'
+  $sync_minute           = '*/20'
+  $sync_monthday         = '*'
+  $restore_hour          = '*'
+  $restore_minute        = '0'
+  $restore_monthday      = '*'
+  $nc_dump_path          = '/opt/pe_failover/nc_dumps'
 
   $pe_users = {
     'pe-postgres'               =>

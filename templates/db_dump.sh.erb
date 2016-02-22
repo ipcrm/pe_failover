@@ -3,7 +3,7 @@
 
 /bin/logger "Starting dump of database: <%= @db_name %>"
 
-<%= @pg_dump_command %> -c <%= @db_name %> -f <%= @dump_path %>/<%= @db_name %>_<%= @timestamp_command %>.bin
+<%= @pg_dump_command %> <%= @db_name %> -f <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_<%= @timestamp_command %>.bin
 
 result="$?"
 if [[ $result -eq 0 ]]; then
