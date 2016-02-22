@@ -1,0 +1,13 @@
+#!/bin/bash
+# This file is managed by Puppet
+
+/bin/logger "Starting dump of database: <%= @db_name %>"
+
+<%= @pg_dump_command %> -c <%= @db_name %> -f <%= @dump_path %>/<%= @db_name %>_<%= @timestamp_command %>.bin
+
+result="$?"
+if [[ $result -eq 0 ]]; then
+  /bin/logger "Completed dump of database: <%= @db_name %>"
+else
+  /bin/logger "Failed to dump database <%= @db_name %>. Exit code is: ${result}"
+fi

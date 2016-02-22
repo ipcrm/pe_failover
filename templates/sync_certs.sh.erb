@@ -1,0 +1,15 @@
+#!/bin/bash
+# This file is managed by Puppet
+
+/bin/logger "Starting sync of Puppet CA directory to <%= @passive_master %>"
+
+<%= @rsync_command %> \
+  -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' \
+  <%= @rsync_ssl_dir %> <%= @rsync_user %>@<%= @passive_master %>:<%= @rsync_ssl_dir %>
+
+result="$?"
+if [[ $result -eq 0 ]]; then
+  /bin/logger "Completed sync of Puppet CA directory to <%= @passive_master %>"
+else
+  /bin/logger "Failed to sync. Exit code is: ${result}"
+fi
