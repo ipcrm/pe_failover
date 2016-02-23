@@ -23,7 +23,7 @@ class pe_failover::passive (
 
   # Setup auth keys
   if $auth_key != '' {
-    ssh_authorized_key{'pe-puppet@primarymaster':
+    ssh_authorized_key{'root@primary':
       user => $rsync_user,
       type => 'ssh-rsa',
       key  => $auth_key,
@@ -45,6 +45,7 @@ class pe_failover::passive (
     mode   => '0755',
   }
 
+  # Create DB Restore Script
   file { 'db_rest_script':
     ensure  => file,
     path    => "${script_directory}/rest_dbs.sh",
@@ -52,6 +53,7 @@ class pe_failover::passive (
     content => template('pe_failover/rest_dbs.sh.erb'),
   }
 
+  # Create the cron job to rest all present db dumps 
   cron { 'rest_dbs_cron':
     ensure   => present,
     command  => "${script_directory}/rest_dbs.sh",
