@@ -1,12 +1,36 @@
 #!/bin/bash
 SECONDARY_MASTER=<%= @fqdn %>
-BKUP_FILE=`ls -lr <%= @nc_dump_path %>/*.json|tail -1`
+BKUP_FILE="<%= @nc_dump_path %>/nc_dump.latest.json"
+SCRIPTNAME=$(basename $0)
 
-PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
-declare -x PE_CERT=$(puppet agent --configprint hostcert)
-declare -x PE_KEY=$(puppet agent --configprint hostprivkey)
-declare -x PE_CA=$(puppet agent --configprint localcacert)
-declare -x NC_CURL_OPT="-s --cacert $PE_CA --cert $PE_CERT --key $PE_KEY --insecure -X POST"
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Started."
 
-curl $NC_CURL_OPT --insecure -T $BKUP_FILE https://$SECONDARY_MASTER:4433/classifier-api/v1/import-hierarchy
+if [ -f $BKUP_FILE ]; then
+  PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
+  declare -x PE_CERT=$(puppet agent --configprint hostcert)
+  declare -x PE_KEY=$(puppet agent --configprint hostprivkey)
+  declare -x PE_CA=$(puppet agent --configprint localcacert)
+  declare -x NC_CURL_OPT="-s --cacert $PE_CA --cert $PE_CERT --key $PE_KEY --insecure -X POST"
+
+  OUTPUT=$(curl $NC_CURL_OPT --insecure -T $BKUP_FILE https://$SECONDARY_MASTER:4433/classifier-api/v1/import-hierarchy)
+  if [ $? -eq 0 ]; then
+    mv $BKUP_FILE <%= @nc_dump_path %>/archive/nc_dump.<%= @timestamp_command %>.json
+    if [ $? -ne 0 ]; then
+      logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to archive backup file [${BKUP_FILE}]!"
+      exit 1
+    fi
+  else
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to import backup file [${BKUP_FILE}]!"
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Error: ${OUTPUT}"
+    exit 2
+  fi
+else
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> No backup file found, skipping import"
+  exit 0
+fi
+
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed."
+
+
+
 

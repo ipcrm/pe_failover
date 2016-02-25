@@ -8,6 +8,8 @@ define pe_failover::db_dump (
   $hour              = $pe_failover::params::hour,
   $monthday          = $pe_failover::params::monthday,
   $timestamp_command = $pe_failover::params::timestamp_command,
+  $md5sum_command    = $pe_failover::params::md5sum_command,
+  $rsync_user        = $pe_failover::params::rsync_user,
 ) {
 
   validate_string($pg_dump_command)
@@ -22,18 +24,17 @@ define pe_failover::db_dump (
     content => template('pe_failover/db_dump.sh.erb'),
     owner   => 'root',
     group   => '0',
-    mode    => '0750',
+    mode    => '0755',
     before  => Cron["${db_name}_db_dump"],
   }
 
   file{"${dump_path}/${db_name}":
-    ensure => directory,
-    owner  => 'pe-postgres',
-    group  => 'pe-puppet',
-    mode   => '0775',
-    require  => File['dump_directory'],
+    ensure  => directory,
+    owner   => $rsync_user,
+    group   => 'pe-postgres',
+    mode    => '0775',
+    require => File['dump_directory'],
   }
-
 
   cron { "${db_name}_db_dump":
     ensure   => present,

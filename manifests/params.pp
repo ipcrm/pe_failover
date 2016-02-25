@@ -1,18 +1,21 @@
 class pe_failover::params {
-  $rsync_user            = 'root'
-  $rsync_user_ssh_id     = '/root/.ssh/pe_failover_id_rsa'
+  $rsync_user            = 'pe-transfer'
+  $rsync_user_home       = "/home/${rsync_user}"
+  $rsync_user_ssh_id     = "${rsync_user_home}/.ssh/pe_failover_id_rsa"
   $rsync_ssl_dir         = '/etc/puppetlabs/puppet/ssl/ca/'
   $rsync_command         = 'rsync -au --delete'
   $incron_ssl_condition  = '/etc/puppetlabs/puppet/ssl/ca/signed IN_CREATE,IN_DELETE,IN_MODIFY'
-  $incron_nc_condition   = '/opt/pe_failover/nc_dumps/ IN_CREATE,IN_DELETE,IN_MODIFY'
   $pe_failover_directory = '/opt/pe_failover'
-  $script_directory      = '/opt/pe_failover/scripts'
+  $script_directory      = "${pe_failover_directory}/scripts"
 
   #Values used for pgsql dump & restore...
   $pg_bin_directory      = '/opt/puppetlabs/server/bin'
-  $dump_path             = '/opt/pe_failover/dumps'
-  $pg_dump_command       = "/usr/bin/sudo -u pe-postgres ${pg_bin_directory}/pg_dump -C"
+  $dump_path             = "${pe_failover_directory}/dumps"
+  $nc_dump_path          = "${pe_failover_directory}/nc_dumps"
+  $pg_dump_command       = "${pg_bin_directory}/pg_dump"
   $timestamp_command     = '`/bin/date +"%Y-%m-%d-%H%M"`'
+  $md5sum_command        = '/bin/md5sum'
+  $pe_bkup_dbs           = ['pe-rbac']
   $hour                  = '*'
   $minute                = '*/15'
   $monthday              = '*'
@@ -20,9 +23,9 @@ class pe_failover::params {
   $sync_minute           = '*/20'
   $sync_monthday         = '*'
   $restore_hour          = '*'
-  $restore_minute        = '0'
+  $restore_db_minute     = '3'
+  $restore_nc_minute     = '0'
   $restore_monthday      = '*'
-  $nc_dump_path          = '/opt/pe_failover/nc_dumps'
 
   $pe_users = {
     'pe-postgres'               =>

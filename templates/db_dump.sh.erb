@@ -1,13 +1,21 @@
 #!/bin/bash
 # This file is managed by Puppet
+SCRIPTNAME=$(basename $0)
 
-/bin/logger "Starting dump of database: <%= @db_name %>"
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting dump of database: <%= @db_name %>"
 
-<%= @pg_dump_command %> <%= @db_name %> -f <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_<%= @timestamp_command %>.bin
-
+# Create Export
+su - pe-postgres -s '/bin/bash' -c "<%= @pg_dump_command %> -C <%= @db_name %> -f <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql"
 result="$?"
 if [[ $result -eq 0 ]]; then
-  /bin/logger "Completed dump of database: <%= @db_name %>"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed dump of database: <%= @db_name %>"
 else
-  /bin/logger "Failed to dump database <%= @db_name %>. Exit code is: ${result}"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to dump database <%= @db_name %>. Exit code is: ${result}"
+fi
+
+# Create MD5SUM file for Export
+<%= @md5sum_command %> <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql > <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql.md5sum
+
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to create MD5Sum for export!"
 fi

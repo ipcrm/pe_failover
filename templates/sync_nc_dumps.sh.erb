@@ -1,15 +1,16 @@
 #!/bin/bash
 # This file is managed by Puppet
+SCRIPTNAME=$(basename $0)
 
-/bin/logger "Starting sync of Puppet NC Dump directory to <%= @passive_master %>"
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting sync of Puppet NC Dump directory to <%= @passive_master %>"
 
 <%= @rsync_command %> \
-  -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' \
+  -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' --exclude 'archive' \
   <%= @nc_dump_path %>/* <%= @rsync_user %>@<%= @passive_master %>:<%= @nc_dump_path %>/
 
 result="$?"
 if [[ $result -eq 0 ]]; then
-  /bin/logger "Completed sync of Puppet NC Dump directory to <%= @passive_master %>"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed sync of Puppet NC Dump directory to <%= @passive_master %>"
 else
-  /bin/logger "Failed to sync. Exit code is: ${result}"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to sync. Exit code is: ${result}"
 fi

@@ -1,51 +1,119 @@
 #!/bin/bash
 # Managed by Puppet
 # Restore Database exports created on master
+SCRIPTNAME=$(basename $0)
 
 manage_service() {
-  logger "Attempting to ${1} service ${2}..."
-  systemctl $1 $2 
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Attempting to ${1} service ${2}..."
+
+  [ $1 == 'stop' ]  && ACTION='stopped'
+  [ $1 == 'start' ] && ACTION='running'
+
+  OUTPUT=$(/opt/puppetlabs/bin/puppet resource service $2 ensure=$ACTION)
   if [ $? -ne 0 ]; then
-    echo "Error! Failed to ${1} service ${2}; exiting!"
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Error! Failed to ${1} service ${2}; exiting!"
     exit 1
   fi
-  logger "Completed ${1} on service ${2}"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed ${1} on service ${2}"
 }
 
 
 # Main
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Started."
+
+# Create Lockfile
+if [ ! -f "/var/tmp/${SCRIPTNAME}.lock" ]; then
+  touch "/var/tmp/${SCRIPTNAME}.lock"
+else
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Script Already running! Exiting..."
+  exit 0
+fi
+
+# Set dump location for DB exports to restore
 DUMP_LOCATION="<%= @dump_path %>"
 
-#Stop Services
-manage_service 'stop' pe-orchestration-services.service
-manage_service 'stop' pe-nginx.service
-manage_service 'stop' pe-console-services.service
-manage_service 'stop' pe-puppetserver.service
+# Determine if there is data to restore PRIOR to killing services
+CHECK=$(find $DUMP_LOCATION -path 'archive' -prune -o -type f -name *_latest.psql)
 
-for db in $(find $DUMP_LOCATION/* -maxdepth 1 -type d)
-do
-  REST_FILE=$(ls -tr $db/*.bin|tail -1)
-  if [ -f $REST_FILE ]; then
+if [ ! -z "${CHECK}" ]; then
+
+  #Stop Services
+  manage_service 'stop' puppet
+  manage_service 'stop' pe-orchestration-services
+  manage_service 'stop' pe-nginx
+  manage_service 'stop' pe-console-services
+  manage_service 'stop' pe-puppetserver
+  manage_service 'stop' pe-puppetdb
+
+  for db in $(find $DUMP_LOCATION/* -maxdepth 1 -type d)
+  do
     DB_NAME=$(basename $db)
-    logger "Dropping database ${DB_NAME}"
-    sudo -u pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/dropdb ${DB_NAME}"
-    if [ $? -ne 0 ]; then
-      logger "Failed to drop database ${DB_NAME}, exiting with services DOWN!!!"
-      exit 2
-    fi
+    REST_FILE="${db}/${DB_NAME}_latest.psql"
+    if [ -f $REST_FILE ]; then
+      MD5RESULT=$(<%= @md5sum_command %> -c  $REST_FILE.md5sum)
+      if [ $? -eq 0  ]; then
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Dropping database ${DB_NAME}"
+        su - pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/dropdb ${DB_NAME}"
+        if [ $? -ne 0 ]; then
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to drop database ${DB_NAME}, exiting with services DOWN!!!"
+          exit 2
+        fi
 
-    logger "Restoring database ${DB_NAME}"
-    su - pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/psql < $REST_FILE"
-    if [ $? -ne 0 ]; then
-      logger "Failed to restore database ${DB_NAME}, exiting with services DOWN!!!"
-      exit 3
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Restoring database ${DB_NAME}"
+        su - pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/psql -v ON_ERROR_STOP=1 < $REST_FILE &>/dev/null"
+        if [ $? -ne 0 ]; then
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to restore database ${DB_NAME}, exiting with services DOWN!!!"
+          exit 3
+        fi
+
+        # Move dump file to archive
+        if [ ! -d "${db}/archive" ]; then
+          mkdir "${db}/archive"
+          if [ $? -ne 0 ]; then
+            logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to create ${DB_NAME} archive location! Trying to continue..."
+          fi
+        fi
+
+        mv $REST_FILE "${db}/archive/${DB_NAME}_<%= @timestamp_command %>.psql"
+        if [ $? -ne 0 ]; then
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to move database export ${REST_FILE} to archive location! Trying to continue..."
+        fi
+
+        mv $REST_FILE.md5sum "${db}/archive/${DB_NAME}_<%= @timestamp_command %>.psql.md5sum"
+        if [ $? -ne 0 ]; then
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to move md5sum file ${REST_FILE}.md5sum to archive location! Trying to continue..."
+        fi
+
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Succesfully restored database ${DB_NAME}"
+      else
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to verify md5sum for ${DB_NAME} archive! Skipping this database and continuing..."
+      fi
     fi
-    logger "Succesfully restored database ${DB_NAME}"
+  done
+
+  #Start Services
+  manage_service 'start' pe-puppetdb
+  manage_service 'start' pe-orchestration-services
+  manage_service 'start' pe-nginx
+  manage_service 'start' pe-console-services
+  manage_service 'start' pe-puppetserver
+  manage_service 'start' puppet
+
+  # Cleanup lockfile
+  rm -f "/var/tmp/${SCRIPTNAME}.lock"
+  if [ $? -ne 0 ]; then
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to remove lockfile! Exiting..."
+    exit 4
   fi
-done
 
-#Start Services
-manage_service 'start' pe-orchestration-services.service
-manage_service 'start' pe-nginx.service
-manage_service 'start' pe-console-services.service
-manage_service 'start' pe-puppetserver.service
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed."
+else
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> No database exports found to restore!"
+  # Cleanup lockfile
+  rm -f "/var/tmp/${SCRIPTNAME}.lock"
+  if [ $? -ne 0 ]; then
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to remove lockfile! Exiting..."
+    exit 4
+  fi
+  exit 0
+fi

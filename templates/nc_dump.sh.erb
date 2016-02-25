@@ -1,6 +1,7 @@
 #!/bin/bash
 PRIMARY_MASTER=<%= @fqdn %>
 SECONDARY_MASTER=<%= @passive_master %>
+SCRIPTNAME=$(basename $0)
 
 PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
 declare -x PE_CERT=$(puppet agent --configprint hostcert)
@@ -8,4 +9,11 @@ declare -x PE_KEY=$(puppet agent --configprint hostprivkey)
 declare -x PE_CA=$(puppet agent --configprint localcacert)
 declare -x NC_CURL_OPT="-s --cacert $PE_CA --cert $PE_CERT --key $PE_KEY --insecure"
 
-curl $NC_CURL_OPT --insecure https://$PRIMARY_MASTER:4433/classifier-api/v1/groups|sed "s/$PRIMARY_MASTER/$SECONDARY_MASTER/g" > <%= @nc_dump_path %>/nc_dump.<%= @timestamp_command %>.json
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting NC Export"
+curl $NC_CURL_OPT --insecure https://$PRIMARY_MASTER:4433/classifier-api/v1/groups|sed "s/$PRIMARY_MASTER/$SECONDARY_MASTER/g" > <%= @nc_dump_path %>/nc_dump.latest.json
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> ERROR! Failed to export NC data, error code: $?"
+else
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Export Completed."
+fi
+

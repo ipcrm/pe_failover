@@ -1,14 +1,14 @@
 class pe_failover::active (
   String $passive_master,
   String $rsync_user            = $pe_failover::params::rsync_user,
+  String $rsync_user_home       = $pe_failover::params::rsync_user_home,
   String $rsync_user_ssh_id     = $pe_failover::params::rsync_user_ssh_id,
   String $rsync_ssl_dir         = $pe_failover::params::rsync_ssl_dir,
   String $rsync_command         = $pe_failover::params::rsync_command,
   String $incron_ssl_condition  = $pe_failover::params::incron_ssl_condition,
-  String $incron_nc_condition   = $pe_failover::params::incron_nc_condition,
   String $script_directory      = $pe_failover::params::script_directory,
   String $pe_failover_directory = $pe_failover::params::pe_failover_directory,
-  Array $pe_bkup_dbs            = ['pe-rbac'],
+  Array $pe_bkup_dbs            = $pe_failover::params::pe_bkup_dbs,
   String $minute                = $pe_failover::params::minute,
   String $hour                  = $pe_failover::params::hour,
   String $monthday              = $pe_failover::params::monthday,
@@ -19,20 +19,27 @@ class pe_failover::active (
   String $nc_dump_path          = $pe_failover::params::nc_dump_path,
 ) inherits pe_failover::params {
 
+  include ::pe_failover
+
   # Validate the proivded passive_master is safe to use with generate
   validate_re($passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b')
 
   # Create a new key for use with pe_failover
   exec{"create_ssh_key_for_${rsync_user}":
-    command => "/bin/ssh-keygen -t rsa -N '' -f ~${rsync_user}/.ssh/pe_failover_id_rsa",
-    unless  => "/bin/test -f ~${rsync_user}/.ssh/pe_failover_id_rsa",
+    command => "/bin/ssh-keygen -t rsa -N '' -f ${rsync_user_home}/.ssh/pe_failover_id_rsa",
+    user    => $rsync_user,
+    creates => "${rsync_user_home}/.ssh/pe_failover_id_rsa",
   }
 
-  # Get rsync users homedir
-  $rsynchome = chomp(generate('/bin/bash','-c',"eval echo ~${rsync_user}"))
+  #Set appropriate perms for ssh ids
+  file{"${rsync_user_home}/.ssh":
+    owner   => $rsync_user,
+    group   => $rsync_user,
+    recurse => true,
+  }
 
   # Create Known hosts file if doesn't exist
-  file {"${rsynchome}/.ssh/known_hosts":
+  file {"${rsync_user_home}/.ssh/known_hosts":
     ensure  => present,
     owner   => $rsync_user,
     group   => $rsync_user,
@@ -42,9 +49,9 @@ class pe_failover::active (
 
   # Add known host for our master
   exec{'passive_master_key':
-    command => "/bin/ssh-keyscan -t rsa ${passive_master} >> ${rsynchome}/.ssh/known_hosts",
-    unless  => "/bin/grep ${passive_master} ${rsynchome}/.ssh/known_hosts" ,
-    require => File["${rsynchome}/.ssh/known_hosts"],
+    command => "/bin/ssh-keyscan -t rsa ${passive_master} >> ${rsync_user_home}/.ssh/known_hosts",
+    unless  => "/bin/grep ${passive_master} ${rsync_user_home}/.ssh/known_hosts" ,
+    require => File["${rsync_user_home}/.ssh/known_hosts"],
   }
 
   # Manage incrond and scripts that send certs to the passive master when any
@@ -54,17 +61,14 @@ class pe_failover::active (
   service { 'incrond':
     ensure    => running,
     enable    => true,
-    subscribe => [
-      File['/etc/incron.d/sync_certs'],
-      File['/etc/incron.d/sync_nc_dumps'],
-    ],
+    subscribe => File['/etc/incron.d/sync_certs'],
   }
 
   # Setup sync scripts for Incron Cert Sync process
   file { 'sync_script':
     ensure  => file,
     path    => "${script_directory}/sync_certs.sh",
-    mode    => '0750',
+    mode    => '0755',
     content => template('pe_failover/sync_certs.sh.erb'),
   }
 
@@ -79,7 +83,7 @@ class pe_failover::active (
   file { 'nc_dump_script':
     ensure  => file,
     path    => "${script_directory}/nc_dump.sh",
-    mode    => '0750',
+    mode    => '0755',
     content => template('pe_failover/nc_dump.sh.erb'),
   }
 
@@ -88,24 +92,27 @@ class pe_failover::active (
     ensure   => present,
     command  => "${script_directory}/nc_dump.sh",
     user     => 'root',
-    minute   => $sync_minute,
-    hour     => $sync_hour,
-    monthday => $sync_monthday,
+    minute   => $minute,
+    hour     => $hour,
+    monthday => $monthday,
   }
 
-  # Setup sync scripts for Incron NC Dump process
+  # Setup sync scripts for NC Dump sync
   file { 'sync_nc_dumps':
     ensure  => file,
     path    => "${script_directory}/sync_nc_dumps.sh",
-    mode    => '0750',
+    mode    => '0755',
     content => template('pe_failover/sync_nc_dumps.sh.erb'),
   }
 
-  file { '/etc/incron.d/sync_nc_dumps':
-    ensure  => file,
-    mode    => '0744',
-    content => "${incron_nc_condition} ${script_directory}/sync_nc_dumps.sh",
-    require => Package['incron'],
+  # Create the NC Dump Sync cron job
+  cron { 'nc_sync':
+    ensure   => present,
+    command  => "${script_directory}/sync_nc_dumps.sh",
+    user     => $rsync_user,
+    minute   => $sync_minute,
+    hour     => $sync_hour,
+    monthday => $sync_monthday,
   }
 
 
@@ -113,7 +120,7 @@ class pe_failover::active (
   file { 'sync_db_script':
     ensure  => file,
     path    => "${script_directory}/sync_dbs.sh",
-    mode    => '0750',
+    mode    => '0755',
     content => template('pe_failover/sync_dbs.sh.erb'),
   }
 
@@ -121,7 +128,7 @@ class pe_failover::active (
   cron { 'db_sync':
     ensure   => present,
     command  => "${script_directory}/sync_dbs.sh",
-    user     => 'root',
+    user     => $rsync_user,
     minute   => $sync_minute,
     hour     => $sync_hour,
     monthday => $sync_monthday,
