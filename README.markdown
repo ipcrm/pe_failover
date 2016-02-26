@@ -64,8 +64,8 @@ The process in order:
     - Do this via an package install directly and not via CURL install from primary master!!!
   - Run pe_failover::passive
     - puppet module install ipcrm-pe_failover
-    - puppet apply -e 'class{pe_failover::passive: auth_key => "<paste your copied key here>"
-  - This step is run on *MasterA*; Copy the ssl directory from primary master
+    - puppet apply -e 'class{pe_failover::passive: auth_key => "_paste your copied key here_"
+  - This step is run on *MasterA*; This script is used to copy the ssl directory from primary master to the secondary(normally on an automatic basis)
     - /opt/pe_failover/scripts/sync_certs.sh
   - Run Puppet Enteprise installer
     - Use the _SAME_ dns alt names you used on the primary installation
