@@ -60,7 +60,7 @@ class pe_failover::passive (
   cron { 'rest_dbs_cron':
     ensure   => present,
     command  => "${script_directory}/rest_dbs.sh",
-    user     => $rsync_user,
+    user     => 'root',
     minute   => $restore_db_minute,
     hour     => $restore_hour,
     monthday => $restore_monthday,
@@ -77,8 +77,8 @@ class pe_failover::passive (
   # Create the cron job to rest all present db dumps 
   cron { 'rest_nc_cron':
     ensure   => present,
-    command  => "cd /tmp; ${script_directory}/nc_rest.sh",
-    user     => $rsync_user,
+    command  => "${script_directory}/nc_rest.sh",
+    user     => 'root',
     minute   => $restore_nc_minute,
     hour     => $restore_hour,
     monthday => $restore_monthday,
