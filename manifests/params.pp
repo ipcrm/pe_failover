@@ -17,10 +17,10 @@ class pe_failover::params {
   $md5sum_command        = '/bin/md5sum'
   $pe_bkup_dbs           = ['pe-rbac']
   $hour                  = '*'
-  $minute                = '*/15'
+  $minute                = '10'
   $monthday              = '*'
   $sync_hour             = '*'
-  $sync_minute           = '*/20'
+  $sync_minute           = '20'
   $sync_monthday         = '*'
   $restore_hour          = '*'
   $restore_db_minute     = '3'
