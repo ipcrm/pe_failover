@@ -76,9 +76,6 @@ fail back and fourth.
 ## Failover and failback instructions
 _WIP_
 
-## What does it actually do
-_WIP_
-
 ## Refrence
 _WIP_
 
