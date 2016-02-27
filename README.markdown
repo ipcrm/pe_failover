@@ -89,4 +89,6 @@ _WIP_
 - Needs tested on other supported platforms for masters
 - Common DNS Name for NC Export
 
-
+## ISSUES
+ - CA Transfer doesn't work
+ - Can't delete certs or we'll waste valid infra certs

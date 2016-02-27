@@ -1,5 +1,6 @@
 class pe_failover::active (
   String $passive_master,
+  Array $exclude_certs          = [],
   String $rsync_user            = $pe_failover::params::rsync_user,
   String $rsync_user_home       = $pe_failover::params::rsync_user_home,
   String $rsync_user_ssh_id     = $pe_failover::params::rsync_user_ssh_id,
@@ -19,7 +20,10 @@ class pe_failover::active (
   String $nc_dump_path          = $pe_failover::params::nc_dump_path,
 ) inherits pe_failover::params {
 
-  include ::pe_failover
+  require ::pe_failover
+
+  # Populate merged cert exclude list for CA transfers
+  $merged_exclude_certs = concat($exclude_certs, $passive_master)
 
   # Validate the proivded passive_master is safe to use with generate
   validate_re($passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b')
@@ -109,7 +113,7 @@ class pe_failover::active (
   cron { 'nc_sync':
     ensure   => present,
     command  => "${script_directory}/sync_nc_dumps.sh",
-    user     => $rsync_user,
+    user     => 'root',
     minute   => $sync_minute,
     hour     => $sync_hour,
     monthday => $sync_monthday,
@@ -128,7 +132,7 @@ class pe_failover::active (
   cron { 'db_sync':
     ensure   => present,
     command  => "${script_directory}/sync_dbs.sh",
-    user     => $rsync_user,
+    user     => 'root',
     minute   => $sync_minute,
     hour     => $sync_hour,
     monthday => $sync_monthday,

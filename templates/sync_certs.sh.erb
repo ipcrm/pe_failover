@@ -1,11 +1,14 @@
 #!/bin/bash
 # This file is managed by Puppet
-SCRIPTNAME=$(basenaem $0)
+SCRIPTNAME=$(basename $0)
 
 logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting sync of Puppet CA directory to <%= @passive_master %>"
 
 <%= @rsync_command %> \
   -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' \
+  <% @merged_exclude_certs.each do |cert| -%>
+  --exclude='<%= cert %>' \
+  <% end -%>
   <%= @rsync_ssl_dir %> <%= @rsync_user %>@<%= @passive_master %>:<%= @rsync_ssl_dir %>
 
 result="$?"

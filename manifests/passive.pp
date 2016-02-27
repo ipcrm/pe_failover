@@ -12,7 +12,7 @@ class pe_failover::passive (
   String $restore_monthday      = $pe_failover::params::restore_monthday,
 ) inherits pe_failover::params{
 
-  include ::pe_failover
+  require ::pe_failover
 
   # Setup PE Users
   $pe_users.keys.each |$pe_user| {
