@@ -3,6 +3,7 @@ class pe_failover (
   String $script_directory      = $pe_failover::params::script_directory,
   String $dump_path             = $pe_failover::params::dump_path,
   String $nc_dump_path          = $pe_failover::params::nc_dump_path,
+  String $cert_dump_path       = $pe_failover::params::cert_dump_path,
   String $rsync_user            = $pe_failover::params::rsync_user,
   String $rsync_user_home       = $pe_failover::params::rsync_user_home,
 ) inherits pe_failover::params{
@@ -18,7 +19,7 @@ class pe_failover (
     ensure => directory,
     owner  => $rsync_user,
     group  => 'pe-postgres',
-    mode   => '0770',
+    mode   => '0775',
   }
 
   file { 'dump_directory':
@@ -45,5 +46,23 @@ class pe_failover (
       mode   => '0770',
   }
 
+  file { 'cert_dump_directory':
+      ensure => directory,
+      path   => $cert_dump_path,
+      owner  => $rsync_user,
+      group  => 'pe-puppet',
+      mode   => '0770',
+  }
 
+  file { 'cert_dump_directory_archive':
+      ensure => directory,
+      path   => "${cert_dump_path}/archive",
+      owner  => $rsync_user,
+      group  => 'pe-puppet',
+      mode   => '0770',
+  }
+
+  # Manage incrond and scripts that send certs to the passive master when any
+  # changes are made, e.g. for new agents, revoked certs, etc...
+  ensure_packages(['rsync','incron'])
 }

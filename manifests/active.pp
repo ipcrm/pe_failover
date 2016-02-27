@@ -18,12 +18,21 @@ class pe_failover::active (
   String $sync_monthday         = $pe_failover::params::sync_monthday,
   String $dump_path             = $pe_failover::params::dump_path,
   String $nc_dump_path          = $pe_failover::params::nc_dump_path,
+  String $cert_dump_path        = $pe_failover::params::cert_dump_path,
 ) inherits pe_failover::params {
 
   require ::pe_failover
 
   # Populate merged cert exclude list for CA transfers
   $merged_exclude_certs = concat($exclude_certs, $passive_master)
+
+  # Create a exclude file for rsync to use (and transfer to the passive for the same purpose)
+  file {"${rsync_ssl_dir}/rsync_exclude":
+    ensure  => present,
+    owner   => 'pe-puppet',
+    group   => 'pe-puppet',
+    content => template('pe_failover/rsync_exclude.erb'),
+  }
 
   # Validate the proivded passive_master is safe to use with generate
   validate_re($passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b')
@@ -57,10 +66,6 @@ class pe_failover::active (
     unless  => "/bin/grep ${passive_master} ${rsync_user_home}/.ssh/known_hosts" ,
     require => File["${rsync_user_home}/.ssh/known_hosts"],
   }
-
-  # Manage incrond and scripts that send certs to the passive master when any
-  # changes are made, e.g. for new agents, revoked certs, etc...
-  ensure_packages(['rsync','incron'])
 
   service { 'incrond':
     ensure    => running,

@@ -1,0 +1,45 @@
+#!/bin/bash
+# This file is managed by Puppet
+SCRIPTNAME=$(basename $0)
+
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting Passive CA Update"
+
+CERT_DUMP_LOCATION="<%= @cert_dump_path %>/latest"
+CERT_TEMP_LOCATION="<%= @cert_dump_path %>/temp_${$}"
+
+# Copy all of the data to a temp location for processing
+mkdir $CERT_TEMP_LOCATION &>/dev/null
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to create ${CERT_TEMP_LOCATION}, error code $?.  Exiting!"
+  exit 1
+fi
+
+cp -pr $CERT_DUMP_LOCATION/* $CERT_TEMP_LOCATION &>/dev/null
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to copy ${CERT_DUMP_LOCATION}, error code $?.  Exiting!"
+  exit 2
+fi
+
+chown 'pe-puppet':'pe-puppet' -R $CERT_TEMP_LOCATION
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to update ownership on ${CERT_TEMP_LOCATION}, error code $?.  Exiting!"
+  exit 3
+fi
+
+# Rsync all ca files to 'real' CA location
+<%= @rsync_command %> \
+  --exclude-from="${CERT_TEMP_LOCATION}/rsync_exclude" \
+  $CERT_TEMP_LOCATION/* <%= @rsync_ssl_dir %>/ &>/dev/null
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to run rsync to update CA directories, error code $?.  Exiting!"
+  exit 4
+fi
+
+# Archive the temp folder
+mv $CERT_TEMP_LOCATION <%= @cert_dump_path %>/archive/cert_<%= @timestamp_command %>
+if [ $? -ne 0 ]; then
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to run rsync to update CA directories, error code $?.  Exiting!"
+  exit 4
+fi
+
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed update of Passive CA."
