@@ -52,16 +52,16 @@ class pe_failover::passive (
   # Create DB Restore Script
   file { 'db_rest_script':
     ensure  => file,
-    path    => "${script_directory}/rest_dbs.sh",
+    path    => "${script_directory}/restore_dbs.sh.erb",
     mode    => '0755',
-    content => template('pe_failover/rest_dbs.sh.erb'),
+    content => template('pe_failover/restore_dbs.sh.erb'),
   }
 
 
   # Create the cron job to rest all present db dumps 
   cron { 'rest_dbs_cron':
     ensure   => present,
-    command  => "${script_directory}/rest_dbs.sh",
+    command  => "${script_directory}/restore_dbs.sh",
     user     => 'root',
     minute   => $restore_db_minute,
     hour     => $restore_hour,
@@ -71,15 +71,15 @@ class pe_failover::passive (
   # Create NC Restore Script
   file { 'nc_rest_script':
     ensure  => file,
-    path    => "${script_directory}/nc_rest.sh",
+    path    => "${script_directory}/restore_nc.sh",
     mode    => '0755',
-    content => template('pe_failover/nc_rest.sh.erb'),
+    content => template('pe_failover/restore_nc.sh.erb'),
   }
 
   # Create the cron job to rest all present db dumps 
   cron { 'rest_nc_cron':
     ensure   => present,
-    command  => "${script_directory}/nc_rest.sh",
+    command  => "${script_directory}/restore_nc.sh",
     user     => 'root',
     minute   => $restore_nc_minute,
     hour     => $restore_hour,
