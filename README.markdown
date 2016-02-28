@@ -1,5 +1,8 @@
 *_WIP DO NOT USE YET_*
 
+_WIP_
+- Disable_cron param in pe_failover::passive for promotion scenario
+
 #### Table of Contents
 
 1. [Overview](#overview)

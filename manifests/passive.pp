@@ -52,7 +52,7 @@ class pe_failover::passive (
   # Create DB Restore Script
   file { 'db_rest_script':
     ensure  => file,
-    path    => "${script_directory}/restore_dbs.sh.erb",
+    path    => "${script_directory}/restore_dbs.sh",
     mode    => '0755',
     content => template('pe_failover/restore_dbs.sh.erb'),
   }
