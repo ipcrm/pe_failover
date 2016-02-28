@@ -1,7 +1,8 @@
 *_WIP DO NOT USE YET_*
 
 _WIP_
-- Disable_cron param in pe_failover::passive for promotion scenario
+- Enable Failback/Failover on the same host (ie don't have to re-create new master)
+
 
 #### Table of Contents
 
@@ -101,9 +102,11 @@ manually failed over to the passive master and your primary is still online you 
 details).  As long as there is no new data arriving on the passive master no services will be stopped.
 
 #### Failback
-There is no mechanism for failback built into this module, however if the primary master was only offline temporarily and no classification or RBAC changes have been made 
+~~There is no mechanism for failback built into this module, however if the primary master was only offline temporarily and no classification or RBAC changes have been made 
 you can simply re-point your clients back to your primary master.  The only additional thing you would need to do is ensure that the latest codebase has been checked out 
-on your primary master prior to returning clients.
+on your primary master prior to returning clients.~~
+
+_WIP_
 
 ## Setup
 Let's say we have two masters; the primary master we'll call 'mastera' and the secondary 'masterb'.
