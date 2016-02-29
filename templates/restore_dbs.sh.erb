@@ -67,13 +67,6 @@ if [ ! -z "${CHECK}" ]; then
         fi
 
         # Move dump file to archive
-        if [ ! -d "${db}/archive" ]; then
-          mkdir "${db}/archive"
-          if [ $? -ne 0 ]; then
-            logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to create ${DB_NAME} archive location! Trying to continue..."
-          fi
-        fi
-
         mv $REST_FILE "${db}/archive/${DB_NAME}_<%= @timestamp_command %>.psql"
         if [ $? -ne 0 ]; then
           logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to move database export ${REST_FILE} to archive location! Trying to continue..."

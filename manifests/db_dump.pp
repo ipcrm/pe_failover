@@ -28,14 +28,6 @@ define pe_failover::db_dump (
     before  => Cron["${db_name}_db_dump"],
   }
 
-  file{"${dump_path}/${db_name}":
-    ensure  => directory,
-    owner   => $rsync_user,
-    group   => 'pe-postgres',
-    mode    => '0775',
-    require => File['dump_directory'],
-  }
-
   cron { "${db_name}_db_dump":
     ensure   => present,
     command  => "${script_directory}/dump_${db_name}.sh",
