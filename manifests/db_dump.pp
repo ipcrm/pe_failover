@@ -1,15 +1,15 @@
 # Dump a PE database with a cron job and a script.
 define pe_failover::db_dump (
   $db_name           = $title,
-  $pg_dump_command   = $pe_failover::params::pg_dump_command,
-  $dump_path         = $pe_failover::params::dump_path,
-  $script_directory  = $pe_failover::params::script_directory,
-  $minute            = $pe_failover::params::minute,
-  $hour              = $pe_failover::params::hour,
-  $monthday          = $pe_failover::params::monthday,
-  $timestamp_command = $pe_failover::params::timestamp_command,
-  $md5sum_command    = $pe_failover::params::md5sum_command,
-  $rsync_user        = $pe_failover::params::rsync_user,
+  $pg_dump_command   = $::pe_failover::params::pg_dump_command,
+  $dump_path         = $::pe_failover::params::dump_path,
+  $script_directory  = $::pe_failover::params::script_directory,
+  $minute            = $::pe_failover::params::minute,
+  $hour              = $::pe_failover::params::hour,
+  $monthday          = $::pe_failover::params::monthday,
+  $timestamp_command = $::pe_failover::params::timestamp_command,
+  $md5sum_command    = $::pe_failover::params::md5sum_command,
+  $rsync_user        = $::pe_failover::params::rsync_user,
 ) {
 
   validate_string($pg_dump_command)
