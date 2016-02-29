@@ -152,5 +152,10 @@ class pe_failover::active (
     }
   }
 
+  # This next section handles removing resources that would have been setup 
+  # if this host was previously configured as a passive.  All we need to do 
+  # is make sure no restore processes run
+  cron { 'rest_dbs_cron': ensure => absent, }
+  cron { 'rest_nc_cron': ensure  => absent, }
 
 }

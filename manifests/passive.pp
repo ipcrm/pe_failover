@@ -11,6 +11,7 @@ class pe_failover::passive (
   String $restore_hour                 = $pe_failover::params::restore_hour,
   String $restore_monthday             = $pe_failover::params::restore_monthday,
   String $incron_passive_ssl_condition = $pe_failover::params::incron_passive_ssl_condition,
+  Array $pe_bkup_dbs                   = $pe_failover::params::pe_bkup_dbs,
 ) inherits pe_failover::params{
 
   require ::pe_failover
@@ -107,5 +108,36 @@ class pe_failover::passive (
     content => "${incron_passive_ssl_condition} ${script_directory}/update_passive_ca.sh",
     require => Package['incron'],
   }
+
+  # This section handles promotion events. i.e this master is re-classfied to be passive
+
+  # Remove cron jobs used by active master
+  cron { 'nc_dump': ensure => absent, }
+  cron { 'nc_sync': ensure => absent, }
+  cron { 'db_sync': ensure => absent, }
+
+  # Update permissions on latest exports
+  # Why? Once you promote this host these sames files need to be transferred from the new active
+  # and it will do so as the rsync_user account
+
+  # DBs
+  $pe_bkup_dbs.each |$db| {
+    file {"${dump_path}/${db}/${db}_latest.psql":
+      owner => $rsync_user,
+      group => $rsync_user,
+    }
+    file {"${dump_path}/${db}/${db}_latest.psql.md5sum":
+      owner => $rsync_user,
+      group => $rsync_user,
+    }
+  }
+
+  # NC Dumps
+  file {"${nc_dump_path}/nc_dump.latest.json":
+      owner => $rsync_user,
+      group => $rsync_user,
+  }
+
+
 
 }
