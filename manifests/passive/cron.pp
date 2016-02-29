@@ -26,4 +26,8 @@ class pe_failover::passive::cron {
   cron { 'nc_sync': ensure => absent, }
   cron { 'db_sync': ensure => absent, }
 
+  $::pe_failover::passive::pe_bkup_dbs.each |$db| {
+    cron { "${db}_db_dump": ensure => absent, }
+  }
+
 }

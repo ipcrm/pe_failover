@@ -35,7 +35,6 @@ class pe_failover::passive::scripts {
 
   # In the event this master is demoted from active to passive, update perms as required
   $::pe_failover::passive::pe_bkup_dbs.each |$db| {
-    cron { "${db}_db_dump": ensure => absent, }
     file {"${::pe_failover::passive::dump_path}/${db}/${db}_latest.psql":
       owner => $::pe_failover::passive::rsync_user,
       group => $::pe_failover::passive::rsync_user,

@@ -14,7 +14,7 @@ class pe_failover::passive (
   Array $pe_bkup_dbs                   = $pe_failover::params::pe_bkup_dbs,
 ) inherits pe_failover::params{
 
-  include ::pe_failover
+  require ::pe_failover
   include ::pe_failover::passive::paths
   include ::pe_failover::passive::users
   include ::pe_failover::passive::ssh
@@ -22,11 +22,4 @@ class pe_failover::passive (
   include ::pe_failover::passive::cron
   include ::pe_failover::passive::incron
 
-  Class['::pe_failover']
-    -> Class['::pe_failover::passive::paths']
-    -> Class['::pe_failover::passive::users']
-    -> Class['::pe_failover::passive::ssh']
-    -> Class['::pe_failover::passive::scripts']
-    -> Class['::pe_failover::passive::cron']
-    -> Class['::pe_failover::passive::incron']
 }

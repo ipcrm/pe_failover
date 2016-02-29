@@ -21,17 +21,11 @@ class pe_failover::active (
   String $cert_dump_path        = $pe_failover::params::cert_dump_path,
 ) inherits pe_failover::params {
 
-  include ::pe_failover
+  require ::pe_failover
   include ::pe_failover::active::ssh
   include ::pe_failover::active::db
   include ::pe_failover::active::scripts
   include ::pe_failover::active::cron
   include ::pe_failover::active::incron
 
-  Class['::pe_failover']
-    -> Class['::pe_failover::active::ssh']
-    -> Class['::pe_failover::active::db']
-    -> Class['::pe_failover::active::scripts']
-    -> Class['::pe_failover::active::cron']
-    -> Class['::pe_failover::active::incron']
 }
