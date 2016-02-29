@@ -1,9 +1,9 @@
-class pe_failover::passive::ssh {
+class pe_failover::ssh {
 
   # Setup auth keys
   if $::pe_failover::passive::auth_key != '' {
-    ssh_authorized_key{"${::pe_failover::passive::rsync_user}@primary":
-      user => $::pe_failover::passive::rsync_user,
+    ssh_authorized_key{"${::pe_failover::rsync_user}@primary":
+      user => $::pe_failover::rsync_user,
       type => 'ssh-rsa',
       key  => $::pe_failover::passive::auth_key,
     }

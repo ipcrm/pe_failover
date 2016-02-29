@@ -1,4 +1,4 @@
-class pe_failover::active::incron {
+class pe_failover::incron {
   # Setup incrond
   service { 'incrond':
     ensure    => running,
@@ -12,7 +12,7 @@ class pe_failover::active::incron {
   file { '/etc/incron.d/sync_certs':
     ensure  => file,
     mode    => '0744',
-    content => "${pe_failover::active::incron_ssl_condition} ${pe_failover::active::script_directory}/sync_certs.sh",
+    content => "${pe_failover::incron_ssl_condition} ${pe_failover::script_directory}/sync_certs.sh",
     require => Package['incron'],
   }
 

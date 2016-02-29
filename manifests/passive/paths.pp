@@ -1,4 +1,4 @@
-class pe_failover::passive::paths {
+class pe_failover::paths {
 
   # Create Required CA directories
   $pe_dirs = [

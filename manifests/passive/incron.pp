@@ -1,4 +1,4 @@
-class pe_failover::passive::incron {
+class pe_failover::incron {
 
   # Setup CA Update Incron process
   service { 'incrond':
@@ -13,7 +13,7 @@ class pe_failover::passive::incron {
   file { '/etc/incron.d/update_passive_ca_certs':
     ensure  => file,
     mode    => '0744',
-    content => "${::pe_failover::passive::incron_passive_ssl_condition} ${::pe_failover::passive::script_directory}/update_passive_ca.sh",
+    content => "${::pe_failover::incron_passive_ssl_condition} ${::pe_failover::script_directory}/update_passive_ca.sh",
     require => Package['incron'],
   }
 

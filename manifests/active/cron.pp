@@ -1,33 +1,33 @@
-class pe_failover::active::cron {
+class pe_failover::cron {
   # Create Cron job to regularly dump NC content
   cron { 'nc_dump':
     ensure   => present,
-    command  => "${pe_failover::active::script_directory}/nc_dump.sh",
+    command  => "${pe_failover::script_directory}/nc_dump.sh",
     user     => 'root',
-    minute   => $pe_failover::active::minute,
-    hour     => $pe_failover::active::hour,
-    monthday => $pe_failover::active::monthday,
+    minute   => $pe_failover::minute,
+    hour     => $pe_failover::hour,
+    monthday => $pe_failover::monthday,
   }
 
   # Create the NC Dump Sync cron job
   cron { 'nc_sync':
     ensure   => present,
-    command  => "${pe_failover::active::script_directory}/sync_nc_dumps.sh",
+    command  => "${pe_failover::script_directory}/sync_nc_dumps.sh",
     user     => 'root',
-    minute   => $pe_failover::active::sync_minute,
-    hour     => $pe_failover::active::sync_hour,
-    monthday => $pe_failover::active::sync_monthday,
+    minute   => $pe_failover::sync_minute,
+    hour     => $pe_failover::sync_hour,
+    monthday => $pe_failover::sync_monthday,
   }
 
 
   # Create the DB Sync cron job
   cron { 'db_sync':
     ensure   => present,
-    command  => "${pe_failover::active::script_directory}/sync_dbs.sh",
+    command  => "${pe_failover::script_directory}/sync_dbs.sh",
     user     => 'root',
-    minute   => $pe_failover::active::sync_minute,
-    hour     => $pe_failover::active::sync_hour,
-    monthday => $pe_failover::active::sync_monthday,
+    minute   => $pe_failover::sync_minute,
+    hour     => $pe_failover::sync_hour,
+    monthday => $pe_failover::sync_monthday,
   }
 
   # This next section handles removing resources that would have been setup
