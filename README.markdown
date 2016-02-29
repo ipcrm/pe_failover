@@ -18,7 +18,7 @@ _WIP_
     * [Installation instructions](#installation-instructions)
 3. [Reference](#reference)
     * [Users](#users)
-    * [Classes](#classes)
+    * [Public Classes](#public-classes)
     * [Defined Types](#define)
     * [Scripts](#scripts)
     * [Crons](#crons)
@@ -152,7 +152,7 @@ fail back and fourth.
 | User       | Class Created    |Purpose |
 | -----------| ------------------ | --- |
 | pe-transfer  | pe_failover(init.pp)  | Used to recieve rsync transfers on the passive nodes |
-#### Classes
+#### Public Classes
 | Class       | Purpose    |
 | -----------| ------------------ |
 | [pe_failover](docs/classes/pe_failover.md)  | Base class that is required by passive/active.  Sets up base users, directories, and packages |
