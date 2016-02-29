@@ -1,4 +1,4 @@
-class pe_failover::ssh {
+class pe_failover::active::ssh {
   # Validate the proivded passive_master is safe to use with execs
   validate_re($pe_failover::active::passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b')
 

@@ -1,4 +1,4 @@
-class pe_failover::incron {
+class pe_failover::active::incron {
   # Setup incrond
   service { 'incrond':
     ensure    => running,

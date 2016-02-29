@@ -35,7 +35,6 @@ define pe_failover::db_dump (
     minute   => $minute,
     hour     => $hour,
     monthday => $monthday,
-    require  => File["${dump_path}/${db_name}"],
   }
 
 }

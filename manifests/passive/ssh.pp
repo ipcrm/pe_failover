@@ -1,4 +1,4 @@
-class pe_failover::ssh {
+class pe_failover::passive::ssh {
 
   # Setup auth keys
   if $::pe_failover::passive::auth_key != '' {

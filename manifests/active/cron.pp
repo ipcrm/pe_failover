@@ -1,4 +1,4 @@
-class pe_failover::cron {
+class pe_failover::active::cron {
   # Create Cron job to regularly dump NC content
   cron { 'nc_dump':
     ensure   => present,

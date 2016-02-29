@@ -1,4 +1,4 @@
-class pe_failover::scripts {
+class pe_failover::passive::scripts {
 
   # Vars for templates
   $dump_path         = $::pe_failover::dump_path

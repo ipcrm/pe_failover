@@ -127,7 +127,7 @@ The process in order:
     - When you do this - set your DNS alt names so that your clients can use a common name for both masters
   - Run pe_failover::active
     - puppet module install ipcrm-pe_failover
-    - puppet apply -e 'class{pe_failover::active: passive_master => "masterb.example.com"}'
+    - puppet apply -e 'include pe_failover; class{pe_failover::active: passive_master => "masterb.example.com"}'
   - Copy the pe-transfer users public key used for copying files from primary master to secondary
     - cat /home/pe-transfer/.ssh/pe_failover_id_rsa.pub and save it off somewhere
 
@@ -137,7 +137,7 @@ The process in order:
     - Do this via an package install directly and not via CURL install from primary master!!!
   - Run pe_failover::passive
     - puppet module install ipcrm-pe_failover
-    - puppet apply -e 'class{pe_failover::passive: auth_key => "_paste your copied key here_"
+    - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
   - This step is run on *MasterA*; This script is used to copy the ssl directory from primary master to the secondary(normally on an automatic basis)
     - /opt/pe_failover/scripts/sync_certs.sh
   - Run Puppet Enteprise installer

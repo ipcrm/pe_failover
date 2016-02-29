@@ -1,4 +1,4 @@
-class pe_failover::cron {
+class pe_failover::passive::cron {
 
   # Create the cron job to rest all present db dumps
   cron { 'rest_dbs_cron':

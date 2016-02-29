@@ -1,4 +1,4 @@
-class pe_failover::db {
+class pe_failover::active::db {
   # Create dumps for each supplied database (pe-rbac ONLY by default)
   $pe_failover::pe_bkup_dbs.each |$db| {
     pe_failover::db_dump { $db:

@@ -1,4 +1,4 @@
-class pe_failover::incron {
+class pe_failover::passive::incron {
 
   # Setup CA Update Incron process
   service { 'incrond':

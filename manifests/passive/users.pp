@@ -1,4 +1,4 @@
-class pe_failover::users {
+class pe_failover::passive::users {
 
   # Setup PE Users
   $::pe_failover::pe_users.keys.each |$pe_user| {
