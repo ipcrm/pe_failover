@@ -14,7 +14,7 @@ else
 fi
 
 # Create MD5SUM file for Export
-<%= @md5sum_command %> <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql > <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql.md5sum
+su - pe-postgres -s '/bin/bash' -c "<%= @md5sum_command %> <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql > <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql.md5sum"
 
 if [ $? -ne 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to create MD5Sum for export!"

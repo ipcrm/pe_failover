@@ -91,7 +91,10 @@ class pe_failover::passive (
   service { 'incrond':
     ensure    => running,
     enable    => true,
-    subscribe => File['/etc/incron.d/update_passive_ca_certs'],
+    subscribe => [
+      File['/etc/incron.d/update_passive_ca_certs'],
+      File['/etc/incron.d/sync_certs'],
+    ],
   }
 
   # Create CA Update Script
@@ -116,12 +119,16 @@ class pe_failover::passive (
   cron { 'nc_sync': ensure => absent, }
   cron { 'db_sync': ensure => absent, }
 
+  # Remove the sync_certs process
+  file{'/etc/incron.d/sync_certs': ensure => absent, }
+
   # Update permissions on latest exports
   # Why? Once you promote this host these sames files need to be transferred from the new active
   # and it will do so as the rsync_user account
 
   # DBs
   $pe_bkup_dbs.each |$db| {
+    cron { "${db}_db_dump": ensure => absent, }
     file {"${dump_path}/${db}/${db}_latest.psql":
       owner => $rsync_user,
       group => $rsync_user,

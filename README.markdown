@@ -2,6 +2,7 @@
 
 _WIP_
 - Enable Failback/Failover on the same host (ie don't have to re-create new master)
+- Remove duplication; there is code that is identical in passive/active
 
 
 #### Table of Contents

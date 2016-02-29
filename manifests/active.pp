@@ -44,14 +44,7 @@ class pe_failover::active (
     creates => "${rsync_user_home}/.ssh/pe_failover_id_rsa",
   }
 
-  #Set appropriate perms for ssh ids
-  file{"${rsync_user_home}/.ssh":
-    owner   => $rsync_user,
-    group   => $rsync_user,
-    recurse => true,
-  }
-
-  # Create Known hosts file if doesn't exist
+  # Create Known hosts file if doesn't exist(rsync_user)
   file {"${rsync_user_home}/.ssh/known_hosts":
     ensure  => present,
     owner   => $rsync_user,
@@ -67,10 +60,36 @@ class pe_failover::active (
     require => File["${rsync_user_home}/.ssh/known_hosts"],
   }
 
+  # Create Known hosts file if doesn't exist(root)
+  file {'/root/.ssh':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0700',
+  }
+
+  file {"/root/.ssh/known_hosts":
+    ensure  => present,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+  }
+
+  # Add known host for our master
+  exec{'root_passive_master_key':
+    command => "/bin/ssh-keyscan -t rsa ${passive_master} >> /root/.ssh/known_hosts",
+    unless  => "/bin/grep ${passive_master} /root/.ssh/known_hosts" ,
+    require => File['/root/.ssh/known_hosts'],
+  }
+
+  # Setup incrond
   service { 'incrond':
     ensure    => running,
     enable    => true,
-    subscribe => File['/etc/incron.d/sync_certs'],
+    subscribe => [
+      File['/etc/incron.d/sync_certs'],
+      File['/etc/incron.d/update_passive_ca_certs'],
+    ],
   }
 
   # Setup sync scripts for Incron Cert Sync process
@@ -156,6 +175,19 @@ class pe_failover::active (
   # if this host was previously configured as a passive.  All we need to do 
   # is make sure no restore processes run
   cron { 'rest_dbs_cron': ensure => absent, }
-  cron { 'rest_nc_cron': ensure  => absent, }
+  cron { 'rest_nc_cron': ensure => absent, }
+  file { '/etc/incron.d/update_passive_ca_certs': ensure => absent, }
+
+  # Update database export perms from pe-transfer to pe-postgres so exports don't fail
+  $pe_bkup_dbs.each |$db| {
+    file {"${dump_path}/${db}/${db}_latest.psql":
+      owner => 'pe-postgres',
+      group => 'pe-postgres',
+    }
+    file {"${dump_path}/${db}/${db}_latest.psql.md5sum":
+      owner => 'pe-postgres',
+      group => 'pe-postgres',
+    }
+  }
 
 }
