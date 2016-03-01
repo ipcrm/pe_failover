@@ -1,4 +1,8 @@
-class pe_failover::passive::paths {
+class pe_failover::passive::files {
+
+  # Set Vars for template
+  $pe_failover_mode_var = 'passive'
+  $pe_failover_key_var  = $::pe_failover::passive::auth_key
 
   # Create Required CA directories
   $pe_dirs = [
@@ -37,6 +41,15 @@ class pe_failover::passive::paths {
     ensure => directory,
     owner  =>  $::pe_failover::rsync_user,
     group  =>  $::pe_failover::rsync_user,
+  }
+
+  file {"${::pe_failover::pe_failover_directory}/conf/pe_failover.yaml":
+    ensure  => present,
+    owner   => root,
+    group   => root,
+    mode    => '0770',
+    content => template('pe_failover/pe_failover.yaml.erb'),
+    replace => false,
   }
 
 }

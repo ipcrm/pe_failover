@@ -9,7 +9,7 @@ The following private classes are included to perform the configuration:
 |[pe_failover::passive::scripts](/manifests/passive/scripts.pp)|
 |[pe_failover::passive::cron](/manifests/passive/cron.pp)|
 |[pe_failover::passive::incron](/manifests/passive/incron.pp)|
-|[pe_failover::passive::paths](/manifests/passive/paths.pp)|
+|[pe_failover::passive::files](/manifests/passive/files.pp)|
 
 #### Parameters
 ##### `auth_key`

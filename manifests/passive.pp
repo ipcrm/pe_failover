@@ -1,9 +1,13 @@
 class pe_failover::passive (
-  String $auth_key,
+  String $auth_key = $::pe_failover_key
 ) inherits pe_failover::params{
 
+  if $auth_key == '' {
+    fail('Auth_key not set and fact pe_failover_key is empty! Must supply key')
+  }
+
   require ::pe_failover
-  contain ::pe_failover::passive::paths
+  contain ::pe_failover::passive::files
   contain ::pe_failover::passive::ssh
   contain ::pe_failover::passive::scripts
   contain ::pe_failover::passive::cron
