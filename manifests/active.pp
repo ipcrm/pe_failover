@@ -3,7 +3,7 @@ class pe_failover::active (
 ) inherits pe_failover::params {
 
   if $passive_master == '' {
-    fail('Parameter passive_master not set and fact pe_failover_passive_master is empty! Must supply passive fqdn!')
+    fail('Parameter passive_master not set and fact pe_failover_passive_master is empty! Must set pe_failover_passive_master in /opt/puppetlabs/facter/facts.d/pe_failover.yaml!')
   }
 
   require ::pe_failover
