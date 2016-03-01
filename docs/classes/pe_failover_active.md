@@ -12,8 +12,8 @@ The following private classes are included to perform the configuration:
 |[pe_failover::active::incron](/manifests/active/incron.pp)|
 
 #### Parameters
-##### `passive_master`
-String. Required.  The full fqdn of the passive master.
+##### `passive_master` **REQUIRED**
+String.  The full fqdn of the passive master.
 
 ##### `exclude_certs`
 Array. This parameter gives you the ability to add excluded certificates from the CA update process.  Where this is useful is if your passive master is not just 1 server, but rather a group of compile master plus a monolithic master.  Default: _[]_

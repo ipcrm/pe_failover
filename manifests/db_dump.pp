@@ -9,7 +9,6 @@ define pe_failover::db_dump (
   $monthday          = $::pe_failover::params::monthday,
   $timestamp_command = $::pe_failover::params::timestamp_command,
   $md5sum_command    = $::pe_failover::params::md5sum_command,
-  $rsync_user        = $::pe_failover::params::rsync_user,
 ) {
 
   validate_string($pg_dump_command)

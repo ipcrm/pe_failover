@@ -1,4 +1,4 @@
-### Class: `pe_failover::active`
+### Class: `pe_failover::passive`
 This class is used to configure the passive master.  All required configurations are setup including users, ssh, scripts, cron jobs, incron, pe_failover paths.
 
 The following private classes are included to perform the configuration:
@@ -12,6 +12,7 @@ The following private classes are included to perform the configuration:
 |[pe_failover::passive::files](/manifests/passive/files.pp)|
 
 #### Parameters
-##### `auth_key`
-String. Required.  The public key from the pe-transfer use on the active master
+##### `auth_key` **REQUIRED ON FIRST RUN**
+String. The public key from the pe-transfer use on the active master.  The first time you run this class you must supply a value for this class.  During the run it gets stored into pe_failover.yaml and is loaded as a fact which will be used on subsequent runs.
+
 

@@ -204,24 +204,24 @@ This fact is set in pe_failover.yaml automatically when you include the pe_failo
 #### Scripts
 | Script       | Purpose    |
 | -----------| ------------------ |
-| [nc_dump.sh](docs/scripts/nc_dump.sh.md) | Export Node Classifier contents on the primary master |
-| [sync_nc_dumps.sh](docs/scripts/sync_nc_dumps.sh.md) | Copy the Node Classifier export from primary master to passive |
-| [db_dump.sh](docs/scripts/db_dump.sh.md) | Export databases on the primary master |
-| [sync_dbs.sh](docs/scripts/sync_dbs.sh.md) | Copy the exported databases from primary master to passive |
-| [rsync_exclude](docs/scripts/rsync_exclude.md) | Creates a exclude file within the primary masters SSL dir for passive master certs|
-| [sync_certs.sh](docs/scripts/sync_certs.sh.md) | Copy the latest CA contents from primary master to passive |
-| [update_passive_ca.sh](docs/scripts/update_passive_ca.sh.md) | Update CA on Passive master from latest copy of primary master CA |
-| [restore_nc.sh](docs/scripts/restore_nc.sh.md) | Update the contents of the Node Classifier on the passive master |
-| [restore_dbs.sh](docs/scripts/restore_dbs.sh.md) | Restore copied databases on the passive master |
+| [nc_dump.sh](/templates/nc_dump.sh.erb) | Export Node Classifier contents on the primary master |
+| [sync_nc_dumps.sh](/templates/sync_nc_dumps.sh.erb) | Copy the Node Classifier export from primary master to passive |
+| [db_dump.sh](/templates/db_dump.sh.erb) | Export databases on the primary master |
+| [sync_dbs.sh](/templates/sync_dbs.sh.erb) | Copy the exported databases from primary master to passive |
+| [rsync_exclude](/templates/rsync_exclude.erb) | Creates a exclude file within the primary masters SSL dir for passive master certs|
+| [sync_certs.sh](/templates/sync_certs.sh.erb) | Copy the latest CA contents from primary master to passive |
+| [update_passive_ca.sh](/templates/update_passive_ca.sh.erb) | Update CA on Passive master from latest copy of primary master CA |
+| [restore_nc.sh](/templates/restore_nc.sh.erb) | Update the contents of the Node Classifier on the passive master |
+| [restore_dbs.sh](/templates/restore_dbs.sh.erb) | Restore copied databases on the passive master |
 #### Crons
 | Job       | Master | Type    | Schedule (default) | Purpose |
 | --- | --- | --- | --- | --- |
-| nc_dump | primary | cron | Every hour @ 10 after | Calls [nc_dump.sh](docs/scripts/nc_dump.sh.md)
-| nc_sync | primary | cron | Every hour @ 20 after | Calls [sync_nc_dumps.sh](docs/scripts/sync_nc_dumps.sh.md)
-| *dbname*_db_dump | primary | cron | Every hour @ 10 after | Calls [db_dump.sh](docs/scripts/db_dump.sh.md) for the given database
-| db_sync | primary  | cron | Every hour @ 20 after | Calls [sync_dbs.sh](docs/scripts/sync_dbs.sh.md)
-| rest_nc_cron | passive | cron | Every hour on the hour | Calls [restore_nc.sh](docs/scripts/restore_nc.sh.md)
-| rest_dbs_cron | passive | cron |  Every hour @ 3 after | Calls [restore_dbs.sh](docs/scripts/restore_dbs.sh.md)
+| nc_dump | primary | cron | Every hour @ 10 after | Calls [nc_dump.sh](/templates/nc_dump.sh.erb)
+| nc_sync | primary | cron | Every hour @ 20 after | Calls [sync_nc_dumps.sh](/templates/sync_nc_dumps.sh.erb)
+| *dbname*_db_dump | primary | cron | Every hour @ 10 after | Calls [db_dump.sh](/templates/db_dump.sh.erb) for the given database
+| db_sync | primary  | cron | Every hour @ 20 after | Calls [sync_dbs.sh](/templates/sync_dbs.sh.erb)
+| rest_nc_cron | passive | cron | Every hour on the hour | Calls [restore_nc.sh](/templates/restore_nc.sh.erb)
+| rest_dbs_cron | passive | cron |  Every hour @ 3 after | Calls [restore_dbs.sh](/templates/restore_dbs.sh.erb)
 
 #### Incron
 | Master | Path (default) | When | Purpose |
