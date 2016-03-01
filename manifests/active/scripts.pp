@@ -55,5 +55,11 @@ class pe_failover::active::scripts {
     content => template('pe_failover/sync_certs.sh.erb'),
   }
 
-
+  # Create refresh_classes script
+  file {"${::pe_failover::script_directory}/refresh_classes.sh":
+    ensure  => present,
+    owner   => 'pe-puppet',
+    group   => 'pe-puppet',
+    content => template('pe_failover/refresh_classes.sh.erb'),
+  }
 }

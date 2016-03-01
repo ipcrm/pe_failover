@@ -44,7 +44,7 @@ class pe_failover::passive::files {
     group  =>  $::pe_failover::rsync_user,
   }
 
-  file {"${::pe_failover::pe_failover_directory}/conf/pe_failover.yaml":
+  file {'/opt/puppetlabs/facter/facts.d/pe_failover.yaml':
     ensure  => present,
     owner   => root,
     group   => root,

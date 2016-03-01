@@ -5,7 +5,7 @@ class pe_failover::active::files {
   $pe_failover_key_var  = ''
   $pe_failover_passive_master_var = $::pe_failover::active::passive_master
 
-  file {"${::pe_failover::pe_failover_directory}/conf/pe_failover.yaml":
+  file {"/opt/puppetlabs/facter/facts.d/pe_failover.yaml":
     ensure  => present,
     owner   => root,
     group   => root,

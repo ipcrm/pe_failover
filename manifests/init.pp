@@ -51,13 +51,6 @@ class pe_failover (
     mode   => '0775',
   }
 
-  file {"${pe_failover_directory}/conf":
-    ensure => directory,
-    owner  => root,
-    group  => root,
-    mode   => '0770',
-  }
-
   file { 'dump_directory':
       ensure => directory,
       path   => $dump_path,

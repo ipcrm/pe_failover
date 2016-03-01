@@ -3,6 +3,14 @@ class pe_failover::active::classification {
   package{'puppetclassify':
     ensure   => present,
     provider => 'puppet_gem',
+    notify   => Exec['refresh_classes'],
+  }
+
+  # Refresh classes in the NC prior to trying to create groups
+  exec{'refesh_classes':
+    command     => "${::pe_failover::script_directory}/refresh_classes.sh",
+    refreshonly => true,
+    require     => File["${::pe_failover::script_directory}/refresh_classes.sh"],
   }
 
   node_group { 'pe_failover':
