@@ -23,6 +23,7 @@ _WIP_
     * [Scripts](#scripts)
     * [Crons](#crons)
     * [Incron](#incron)
+4. [Known Issues](#known-issues)
 
 ## Overview
 
@@ -189,6 +190,13 @@ the nc_dump(mastera), nc_sync(mastera), and finally restore_nc on masterb.
 | [pe_failover::passive](docs/classes/pe_failover_passive.md) | Used to classify the passive master.  Configures users, scripts, dirs, etc.. |
 | [pe_failover::params](docs/classes/pe_failover_passive.md) | Default param values |
 
+#### Facts
+##### `pe_failover_mode`:
+This fact is set in pe_failover.yaml automatically based on the class assigned.  Its used for classification.  Valid values: _active,passive_
+
+##### `pe_failover_key`:
+This fact is set in pe_failover.yaml automatically when you include the pe_failover::passive class.  It stores the value of auth_key from the original run of puppet when you configured the master. 
+
 #### Define
 | Define       | Purpose    |
 | -----------| ------------------ |
@@ -221,7 +229,10 @@ the nc_dump(mastera), nc_sync(mastera), and finally restore_nc on masterb.
 | primary | /etc/puppetlabs/puppet/ssl/ca/signed | On file create/delete | Calls [sync_certs.sh](docs/scripts/sync_certs.sh.md)
 | passive | /opt/pe_failover/cert_dumps/latest/signed | On file create/delete | Calls [update_passive_ca.sh](docs/scripts/update_passive_ca.sh.md)
 
-## _Parked for Now_
+## Known Issues
+- Changing pe_failover_directory will cause the facts pe_failover_mode and pe_failover_key to not get evaluated.  Workaround is to manually set those facts via facts.d
+
+## Parked for Now
 - Needs tested on other supported platforms for masters
 - Common DNS Name for NC Export
 
