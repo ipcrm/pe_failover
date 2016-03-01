@@ -49,7 +49,6 @@ class pe_failover::passive::files {
     group   => root,
     mode    => '0770',
     content => template('pe_failover/pe_failover.yaml.erb'),
-    replace => false,
   }
 
 }
