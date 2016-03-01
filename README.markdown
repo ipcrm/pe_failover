@@ -1,8 +1,8 @@
 *_WIP DO NOT USE YET_*
 
 _WIP_
-- Enable Failback/Failover on the same host (ie don't have to re-create new master)
-- Remove duplication; there is code that is identical in passive/active
+- Document Failover/Failback
+- Create code for creating classification for passive/active
 
 
 #### Table of Contents

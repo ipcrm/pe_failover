@@ -1,6 +1,10 @@
 class pe_failover::active (
-  String $passive_master,
+  String $passive_master = $::pe_failover_passive_master
 ) inherits pe_failover::params {
+
+  if $passive_master == '' {
+    fail('Parameter passive_master not set and fact pe_failover_passive_master is empty! Must supply passive fqdn!')
+  }
 
   require ::pe_failover
   contain ::pe_failover::active::ssh
@@ -11,3 +15,7 @@ class pe_failover::active (
   contain ::pe_failover::active::files
 
 }
+
+  String $auth_key = $::pe_failover_key
+  ) inherits pe_failover::params{
+
