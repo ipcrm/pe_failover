@@ -24,7 +24,19 @@ class pe_failover::passive::paths {
     ensure => directory,
     owner  => 'pe-puppet',
     group  => 'pe-puppet',
-    mode   => '0751',
+    mode   => '0755',
+  }
+
+  $cert_transfer_dirs = [
+    "${::pe_failover::cert_dump_path}/latest",
+    "${::pe_failover::cert_dump_path}/latest/ca",
+    "${::pe_failover::cert_dump_path}/latest/ca/signed",
+  ]
+
+  file{$cert_transfer_dirs:
+    ensure => directory,
+    owner  =>  $::pe_failover::rsync_user,
+    group  =>  $::pe_failover::rsync_user,
   }
 
 }

@@ -130,6 +130,7 @@ The process in order:
     - puppet apply -e 'include pe_failover; class{pe_failover::active: passive_master => "masterb.example.com"}'
   - Copy the pe-transfer users public key used for copying files from primary master to secondary
     - cat /home/pe-transfer/.ssh/pe_failover_id_rsa.pub and save it off somewhere
+    - Configure the pe_failover_mode in /opt/pe_failover/conf/pe_failover.conf; set the value to active
 
 *Master B*
 
@@ -138,6 +139,7 @@ The process in order:
   - Run pe_failover::passive
     - puppet module install ipcrm-pe_failover
     - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
+    - Configure the pe_failover_mode in /opt/pe_failover/conf/pe_failover.conf; set the value to passive
   - Force a sync of the CA directory
     - On _Master A_
       - Touch /etc/puppetlabs/puppet/ssl/ca/signed/forcesync
@@ -150,7 +152,23 @@ The process in order:
     - Use the _SAME_ dns alt names you used on the primary installation
 
 Once you've run through the steps above you will have two functional masters with the same CA cert chain and the ability to
-fail back and fourth.
+fail back and fourth - however you need to permanently classify these hosts.  To do this via the NC create a group
+for both the passive master and the active failover modes on Master A.  
+
+  - Group 1: pe-failover-active
+    - Rule1: pe_failover_mode=active
+    - Class1: pe_failover
+    - Class2: pe_failover::active
+      - Param1: passive_master=masterb.inf.puppetlabs.demo
+
+  - Group 2: pe-failover-passive
+    - Rule1: pe_failover_mode=passive
+    - Class1: pe_failover
+    - Class2: pe_failover::passive
+      - Param1: auth_key=(contents of public key)
+
+Once these are configured you can wait an hour for the NC dump/restore process to happen automatically, or you can manually run
+the nc_dump(mastera), nc_sync(mastera), and finally restore_nc on masterb.
 
 ## Reference
 
