@@ -36,7 +36,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Archive the temp folder
-mv $CERT_TEMP_LOCATION <%= @cert_dump_path %>/archive/cert_<%= @timestamp_command %>
+mv $CERT_TEMP_LOCATION <%= @cert_dump_path %>/archive/cert_$$_<%= @timestamp_command %>
 if [ $? -ne 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to run rsync to update CA directories, error code $?.  Exiting!"
   exit 4
