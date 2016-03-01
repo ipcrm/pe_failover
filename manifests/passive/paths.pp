@@ -13,4 +13,18 @@ class pe_failover::passive::paths {
     mode   => '0755',
   }
 
+  file{'/etc/puppetlabs/puppet/ssl':
+    ensure => directory,
+    owner  => 'pe-puppet',
+    group  => 'pe-puppet',
+    mode   => '0771',
+  }
+
+  file{'/etc/puppetlabs/puppet/ssl/ca':
+    ensure => directory,
+    owner  => 'pe-puppet',
+    group  => 'pe-puppet',
+    mode   => '0751',
+  }
+
 }

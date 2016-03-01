@@ -8,7 +8,6 @@ The following private classes are included to perform the configuration:
 |[pe_failover::passive::ssh](/manifests/passive/ssh.pp)|
 |[pe_failover::passive::scripts](/manifests/passive/scripts.pp)|
 |[pe_failover::passive::cron](/manifests/passive/cron.pp)|
-|[pe_failover::passive::users](/manifests/passive/users.pp)|
 |[pe_failover::passive::incron](/manifests/passive/incron.pp)|
 |[pe_failover::passive::paths](/manifests/passive/paths.pp)|
 

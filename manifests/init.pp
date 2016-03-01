@@ -25,6 +25,17 @@ class pe_failover (
   String $rsync_ssl_dir                = $::pe_failover::params::rsync_ssl_dir,
   String $rsync_command                = $::pe_failover::params::rsync_command,
 ) inherits pe_failover::params{
+
+  # Ensure PE users area present - this will only imnpact the passive during initial setup
+  $pe_users.keys.each |$pe_user| {
+    user{$pe_user:
+      comment    => $pe_users[$pe_user]['description'],
+      home       => $pe_users[$pe_user]['home'],
+      managehome => false,
+      shell      => $pe_users[$pe_user]['shell'],
+    }
+  }
+
   # Setup transfer user 
   user {$rsync_user:
     ensure     => present,

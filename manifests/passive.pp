@@ -4,7 +4,6 @@ class pe_failover::passive (
 
   require ::pe_failover
   contain ::pe_failover::passive::paths
-  contain ::pe_failover::passive::users
   contain ::pe_failover::passive::ssh
   contain ::pe_failover::passive::scripts
   contain ::pe_failover::passive::cron

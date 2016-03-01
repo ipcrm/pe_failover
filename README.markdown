@@ -138,8 +138,14 @@ The process in order:
   - Run pe_failover::passive
     - puppet module install ipcrm-pe_failover
     - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
-  - This step is run on *MasterA*; This script is used to copy the ssl directory from primary master to the secondary(normally on an automatic basis)
-    - /opt/pe_failover/scripts/sync_certs.sh
+  - Force a sync of the CA directory
+    - On _Master A_
+      - Touch /etc/puppetlabs/puppet/ssl/ca/signed/forcesync
+    - On _Master B_ 
+      - Validate sync is working by using ls -ltr /etc/puppetlabs/puppet/ssl/ca/signed and checking for an empty file called forcesync
+      - IF it didn't work check for PE_FAILOVER messages in the syslog to determine the issue
+    - On _Master A_
+      - After successful validation remove the forcesync file (which will cause another sync and remove it on the remote side)
   - Run Puppet Enteprise installer
     - Use the _SAME_ dns alt names you used on the primary installation
 
