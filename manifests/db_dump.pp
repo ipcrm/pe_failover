@@ -1,14 +1,18 @@
 # Dump a PE database with a cron job and a script.
 define pe_failover::db_dump (
   $db_name           = $title,
-  $pg_dump_command   = $::pe_failover::params::pg_dump_command,
-  $dump_path         = $::pe_failover::params::dump_path,
-  $script_directory  = $::pe_failover::params::script_directory,
-  $minute            = $::pe_failover::params::minute,
-  $hour              = $::pe_failover::params::hour,
-  $monthday          = $::pe_failover::params::monthday,
-  $timestamp_command = $::pe_failover::params::timestamp_command,
-  $md5sum_command    = $::pe_failover::params::md5sum_command,
+  $pg_dump_command   = $::pe_failover::pg_dump_command,
+  $dump_path         = $::pe_failover::dump_path,
+  $script_directory  = $::pe_failover::script_directory,
+  $minute            = $::pe_failover::minute,
+  $hour              = $::pe_failover::hour,
+  $monthday          = $::pe_failover::monthday,
+  $timestamp_command = $::pe_failover::timestamp_command,
+  $md5sum_command    = $::pe_failover::md5sum_command,
+  $rsync_command     = $::pe_failover::rsync_command,
+  $rsync_ssl_dir     = $::pe_failover::rsync_ssl_dir,
+  $rsync_user_ssh_id = $::pe_failover::rsync_user_ssh_id,
+  $rsync_user        = $::pe_failover::rsync_user,
 ) {
 
   validate_string($pg_dump_command)
