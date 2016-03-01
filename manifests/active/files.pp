@@ -9,7 +9,7 @@ class pe_failover::active::files {
     ensure  => present,
     owner   => root,
     group   => root,
-    mode    => '0770',
+    mode    => '0660',
     content => template('pe_failover/pe_failover.yaml.erb'),
   }
 
