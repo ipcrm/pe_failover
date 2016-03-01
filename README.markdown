@@ -153,18 +153,23 @@ The process in order:
 
 Once you've run through the steps above you will have two functional masters with the same CA cert chain and the ability to
 fail back and fourth - however you need to permanently classify these hosts.  To do this via the NC create a group
-for both the passive master and the active failover modes on Master A.  
+hierachy; one parent group that applies the base class and one for both the passive master and the active failover modes on Master A. 
 
-  - Group 1: pe-failover-active
-    - Rule1: pe_failover_mode=active
+  - Group 1: pe-failover
+    - Parent: All Nodes
+    - Rule1: pe_failover_mode match_regex (active|passive)
     - Class1: pe_failover
-    - Class2: pe_failover::active
+
+  - Group 2: pe-failover-active
+    - Parent: pe-failover
+    - Rule1: pe_failover_mode=active
+    - Class1: pe_failover::active
       - Param1: passive_master=masterb.inf.puppetlabs.demo
 
-  - Group 2: pe-failover-passive
+  - Group 3: pe-failover-passive
+    - Parent: pe-failover
     - Rule1: pe_failover_mode=passive
-    - Class1: pe_failover
-    - Class2: pe_failover::passive
+    - Class1: pe_failover::passive
       - Param1: auth_key=(contents of public key)
 
 Once these are configured you can wait an hour for the NC dump/restore process to happen automatically, or you can manually run

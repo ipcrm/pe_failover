@@ -46,4 +46,11 @@ class pe_failover::active::ssh {
     unless  => "/bin/grep ${pe_failover::active::passive_master} /root/.ssh/known_hosts" ,
     require => File['/root/.ssh/known_hosts'],
   }
+
+  # In the event this is a promoted passive, delete the auth keys for the transfer user to prevent new data 
+  # from being written to this master
+  file {"${pe_failover::rsync_user_home}/.ssh/authorized_keys":
+    ensure  => absent,
+  }
+
 }

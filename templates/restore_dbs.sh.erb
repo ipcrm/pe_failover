@@ -4,28 +4,28 @@
 SCRIPTNAME=$(basename $0)
 
 manage_service() {
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Attempting to ${1} service ${2}..."
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Attempting to ${1} service ${2}..."
 
   [ $1 == 'stop' ]  && ACTION='stopped'
   [ $1 == 'start' ] && ACTION='running'
 
   OUTPUT=$(/opt/puppetlabs/bin/puppet resource service $2 ensure=$ACTION)
   if [ $? -ne 0 ]; then
-    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Error! Failed to ${1} service ${2}; exiting!"
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to ${1} service ${2}; exiting!"
     exit 1
   fi
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed ${1} on service ${2}"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed ${1} on service ${2}"
 }
 
 
 # Main
-logger "PE_FAILOVER: ${SCRIPTNAME} ---> Started."
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Started."
 
 # Create Lockfile
 if [ ! -f "/var/tmp/${SCRIPTNAME}.lock" ]; then
   touch "/var/tmp/${SCRIPTNAME}.lock"
 else
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Script Already running! Exiting..."
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [WARNING] Script Already running! Exiting..."
   exit 0
 fi
 
@@ -52,34 +52,34 @@ if [ ! -z "${CHECK}" ]; then
     if [ -f $REST_FILE ]; then
       MD5RESULT=$(<%= @md5sum_command %> -c  $REST_FILE.md5sum)
       if [ $? -eq 0  ]; then
-        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Dropping database ${DB_NAME}"
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Dropping database ${DB_NAME}"
         su - pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/dropdb ${DB_NAME}"
         if [ $? -ne 0 ]; then
-          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to drop database ${DB_NAME}, exiting with services DOWN!!!"
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to drop database ${DB_NAME}, exiting with services DOWN!!!"
           exit 2
         fi
 
-        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Restoring database ${DB_NAME}"
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Restoring database ${DB_NAME}"
         su - pe-postgres -s /bin/bash -c "/opt/puppetlabs/server/bin/psql -v ON_ERROR_STOP=1 < $REST_FILE &>/dev/null"
         if [ $? -ne 0 ]; then
-          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to restore database ${DB_NAME}, exiting with services DOWN!!!"
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to restore database ${DB_NAME}, exiting with services DOWN!!!"
           exit 3
         fi
 
         # Move dump file to archive
         mv $REST_FILE "${db}/archive/${DB_NAME}_<%= @timestamp_command %>.psql"
         if [ $? -ne 0 ]; then
-          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to move database export ${REST_FILE} to archive location! Trying to continue..."
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to move database export ${REST_FILE} to archive location! Trying to continue..."
         fi
 
         mv $REST_FILE.md5sum "${db}/archive/${DB_NAME}_<%= @timestamp_command %>.psql.md5sum"
         if [ $? -ne 0 ]; then
-          logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to move md5sum file ${REST_FILE}.md5sum to archive location! Trying to continue..."
+          logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to move md5sum file ${REST_FILE}.md5sum to archive location! Trying to continue..."
         fi
 
-        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Succesfully restored database ${DB_NAME}"
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Succesfully restored database ${DB_NAME}"
       else
-        logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to verify md5sum for ${DB_NAME} archive! Skipping this database and continuing..."
+        logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to verify md5sum for ${DB_NAME} archive! Skipping this database and continuing..."
       fi
     fi
   done
@@ -95,17 +95,17 @@ if [ ! -z "${CHECK}" ]; then
   # Cleanup lockfile
   rm -f "/var/tmp/${SCRIPTNAME}.lock"
   if [ $? -ne 0 ]; then
-    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to remove lockfile! Exiting..."
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to remove lockfile! Exiting..."
     exit 4
   fi
 
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed."
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed."
 else
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> No database exports found to restore!"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [WARNING] No database exports found to restore!"
   # Cleanup lockfile
   rm -f "/var/tmp/${SCRIPTNAME}.lock"
   if [ $? -ne 0 ]; then
-    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to remove lockfile! Exiting..."
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to remove lockfile! Exiting..."
     exit 4
   fi
   exit 0

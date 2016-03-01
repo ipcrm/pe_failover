@@ -2,7 +2,7 @@
 # This file is managed by Puppet
 SCRIPTNAME=$(basename $0)
 
-logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting sync of Puppet CA directory to <%= @passive_master %>"
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting sync of Puppet CA directory to <%= @passive_master %>"
 
 <%= @rsync_command %> \
   -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' \
@@ -11,7 +11,7 @@ logger "PE_FAILOVER: ${SCRIPTNAME} ---> Starting sync of Puppet CA directory to 
 
 result="$?"
 if [[ $result -eq 0 ]]; then
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed sync of Puppet CA directory to <%= @passive_master %>"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed sync of Puppet CA directory to <%= @passive_master %>"
 else
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to sync. Exit code is: ${result}"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to sync. Exit code is: ${result}"
 fi

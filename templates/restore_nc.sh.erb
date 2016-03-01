@@ -3,7 +3,7 @@ SECONDARY_MASTER=<%= @fqdn %>
 BKUP_FILE="<%= @nc_dump_path %>/nc_dump.latest.json"
 SCRIPTNAME=$(basename $0)
 
-logger "PE_FAILOVER: ${SCRIPTNAME} ---> Started."
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Started."
 
 if [ -f $BKUP_FILE ]; then
   PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
@@ -16,20 +16,20 @@ if [ -f $BKUP_FILE ]; then
   if [ $? -eq 0 ]; then
     mv $BKUP_FILE <%= @nc_dump_path %>/archive/nc_dump.<%= @timestamp_command %>.json
     if [ $? -ne 0 ]; then
-      logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to archive backup file [${BKUP_FILE}]!"
+      logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to archive backup file [${BKUP_FILE}]!"
       exit 1
     fi
   else
-    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Failed to import backup file [${BKUP_FILE}]!"
-    logger "PE_FAILOVER: ${SCRIPTNAME} ---> Error: ${OUTPUT}"
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to import backup file [${BKUP_FILE}]!"
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Output: ${OUTPUT}"
     exit 2
   fi
 else
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> No backup file found, skipping import"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [WARNING] No backup file found, skipping import"
   exit 0
 fi
 
-logger "PE_FAILOVER: ${SCRIPTNAME} ---> Completed."
+logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed."
 
 
 
