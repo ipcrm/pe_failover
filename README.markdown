@@ -226,8 +226,8 @@ This fact is set in pe_failover.yaml automatically when you include the pe_failo
 #### Incron
 | Master | Path (default) | When | Purpose |
 | --- | --- | --- | --- |
-| primary | /etc/puppetlabs/puppet/ssl/ca/signed | On file create/delete | Calls [sync_certs.sh](templates/sync_certs.sh.md)
-| passive | /opt/pe_failover/cert_dumps/latest/signed | On file create/delete | Calls [update_passive_ca.sh](templates/update_passive_ca.sh.md)
+| primary | /etc/puppetlabs/puppet/ssl/ca/signed | On file create/delete | Calls [sync_certs.sh](templates/sync_certs.sh.erb)
+| passive | /opt/pe_failover/cert_dumps/latest/signed | On file create/delete | Calls [update_passive_ca.sh](templates/update_passive_ca.sh.erb)
 
 ## Known Issues
 - Changing pe_failover_directory will cause the facts pe_failover_mode and pe_failover_key to not get evaluated.  Workaround is to manually set those facts via facts.d
