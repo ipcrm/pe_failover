@@ -7,7 +7,7 @@ class pe_failover::active::classification {
   }
 
   # Refresh classes in the NC prior to trying to create groups
-  exec{'refesh_classes':
+  exec{'refresh_classes':
     command     => "${::pe_failover::script_directory}/refresh_classes.sh",
     refreshonly => true,
     require     => File["${::pe_failover::script_directory}/refresh_classes.sh"],
