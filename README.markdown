@@ -131,7 +131,6 @@ The process in order:
     - puppet apply -e 'include pe_failover; class{pe_failover::active: passive_master => "masterb.example.com"}'
   - Copy the pe-transfer users public key used for copying files from primary master to secondary
     - cat /home/pe-transfer/.ssh/pe_failover_id_rsa.pub and save it off somewhere
-    - Configure the pe_failover_mode in /opt/pe_failover/conf/pe_failover.conf; set the value to active
 
 *Master B*
 
@@ -140,7 +139,6 @@ The process in order:
   - Run pe_failover::passive
     - puppet module install ipcrm-pe_failover
     - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
-    - Configure the pe_failover_mode in /opt/pe_failover/conf/pe_failover.conf; set the value to passive
   - Force a sync of the CA directory
     - On _Master A_
       - Touch /etc/puppetlabs/puppet/ssl/ca/signed/forcesync
