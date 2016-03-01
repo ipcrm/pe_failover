@@ -9,27 +9,6 @@ class pe_failover::active::cron {
     monthday => $pe_failover::monthday,
   }
 
-  # Create the NC Dump Sync cron job
-  cron { 'nc_sync':
-    ensure   => present,
-    command  => "${pe_failover::script_directory}/sync_nc_dumps.sh",
-    user     => 'root',
-    minute   => $pe_failover::sync_minute,
-    hour     => $pe_failover::sync_hour,
-    monthday => $pe_failover::sync_monthday,
-  }
-
-
-  # Create the DB Sync cron job
-  cron { 'db_sync':
-    ensure   => present,
-    command  => "${pe_failover::script_directory}/sync_dbs.sh",
-    user     => 'root',
-    minute   => $pe_failover::sync_minute,
-    hour     => $pe_failover::sync_hour,
-    monthday => $pe_failover::sync_monthday,
-  }
-
   # This next section handles removing resources that would have been setup
   # if this host was previously configured as a passive.  All we need to do
   # is make sure no restore processes run

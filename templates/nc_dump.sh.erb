@@ -14,6 +14,16 @@ curl $NC_CURL_OPT --insecure https://$PRIMARY_MASTER:4433/classifier-api/v1/grou
 if [ $? -ne 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to export NC data, error code: $?"
 else
-  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Export Completed."
-fi
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Export Completed. Attempting to sync data to ${SECONDARY_MASTER}"
 
+  <%= @rsync_command %> \
+    -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' --exclude 'archive' \
+    <%= @nc_dump_path %>/* <%= @rsync_user %>@<%= @passive_master %>:<%= @nc_dump_path %>/
+
+  result="$?"
+  if [[ $result -eq 0 ]]; then
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed sync of Puppet NC Dump directory to <%= @passive_master %>"
+  else
+    logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to sync. Exit code is: ${result}"
+  fi
+fi

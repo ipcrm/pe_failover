@@ -31,22 +31,6 @@ class pe_failover::active::scripts {
     content => template('pe_failover/nc_dump.sh.erb'),
   }
 
-  # Setup sync scripts for NC Dump sync
-  file { 'sync_nc_dumps':
-    ensure  => file,
-    path    => "${pe_failover::script_directory}/sync_nc_dumps.sh",
-    mode    => '0755',
-    content => template('pe_failover/sync_nc_dumps.sh.erb'),
-  }
-
-  # Setup sync scripts for the DB sync cron job
-  file { 'sync_db_script':
-    ensure  => file,
-    path    => "${pe_failover::script_directory}/sync_dbs.sh",
-    mode    => '0755',
-    content => template('pe_failover/sync_dbs.sh.erb'),
-  }
-
   # Setup sync scripts for Incron Cert Sync process
   file { 'sync_script':
     ensure  => file,
