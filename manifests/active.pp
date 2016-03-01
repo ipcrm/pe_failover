@@ -15,7 +15,3 @@ class pe_failover::active (
   contain ::pe_failover::active::files
 
 }
-
-  String $auth_key = $::pe_failover_key
-  ) inherits pe_failover::params{
-
