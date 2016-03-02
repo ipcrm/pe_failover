@@ -13,6 +13,7 @@ define pe_failover::db_dump (
   $rsync_ssl_dir     = $::pe_failover::rsync_ssl_dir,
   $rsync_user_ssh_id = $::pe_failover::rsync_user_ssh_id,
   $rsync_user        = $::pe_failover::rsync_user,
+  $passive_master    = $::pe_failover::active::passive_master,
 ) {
 
   validate_string($pg_dump_command)
