@@ -13,5 +13,6 @@ class pe_failover::active (
   contain ::pe_failover::active::cron
   contain ::pe_failover::active::incron
   contain ::pe_failover::active::files
+  contain ::pe_failover::active::classification
 
 }
