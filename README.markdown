@@ -37,12 +37,16 @@ can and cannot do!
 
 This module provides capabilities for a limited HA solution for Puppet Enterprise.
 
-Availability is provided for the following services:
+**Availability** is provided for the following services:
 
-- Node Classification
-- Certificate signing/revoking
+- Puppetserver
+- CA
+- Node Classifier
+- PuppetDB
+- Orchestrator/PXP
+- MCollective
 
-The data for the following services is *not* protected:
+**Data** for the following services is **_not_** protected:
 
 - PuppetDB data, including exported resources, historical reports, and
   historical catalogs
