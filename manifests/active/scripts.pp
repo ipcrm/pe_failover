@@ -46,5 +46,6 @@ class pe_failover::active::scripts {
     group   => 'pe-puppet',
     content => template('pe_failover/refresh_classes.sh.erb'),
     mode    => '0755',
+    notify  => Exec['refresh_classes'],
   }
 }

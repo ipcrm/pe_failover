@@ -3,7 +3,6 @@ class pe_failover::active::classification {
   package{'puppetclassify':
     ensure   => present,
     provider => 'puppet_gem',
-    notify   => Exec['refresh_classes'],
   }
 
   # Refresh classes in the NC prior to trying to create groups

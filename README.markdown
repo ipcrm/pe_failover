@@ -1,21 +1,21 @@
-*_WIP DO NOT USE YET_*
-
-_WIP_
-- Document Failover/Failback
-- Create code for creating classification for passive/active
-
-
 #### Table of Contents
 
 1. [Overview](#overview)
     * [Notice](#notice)
     * [Architecture](#architecture)
     * [Deployment Strategies](#deployment-strategies)
+    * [Functional State of a Passive or Active Master](#functional-state-of-a-passive-or-active-master)
+    * [Determining Master State](#determining-master-state)
     * [Failover](#failover)
+    * [Promotion](#promotion)
     * [Failback](#failback)
 2. [Setup](#setup)
     * [Prerequisites](#prerequisites)
     * [Installation instructions](#installation-instructions)
+      * [Master A](#master-a)
+      * [Master B](#master-b)
+      * [Classification](#classification)
+      * [Validation](#validation)
 3. [Reference](#reference)
     * [Users](#users)
     * [Public Classes](#public-classes)
@@ -23,13 +23,14 @@ _WIP_
     * [Scripts](#scripts)
     * [Crons](#crons)
     * [Incron](#incron)
+    * [Logging](#logging)
 4. [Known Issues](#known-issues)
 
 ## Overview
 
-The purpose of this module is to provide failover capabilities for Puppet Enterprise.  By using this module 
-you will be able to setup a 'Warm' spare master (or master + compile masters) at a secondary location to be used 
-in the event of a DR like situation.  Please read the following notice _CAREFULLY_ so that you understand what this module 
+The purpose of this module is to provide failover capabilities for Puppet Enterprise.  By using this module
+you will be able to setup a 'Warm' spare master (or master + compile masters) at a secondary location to be used
+in the event of a DR like situation.  Please read the following notice _CAREFULLY_ so that you understand what this module
 can and cannot do!
 
 #### Notice
@@ -47,8 +48,8 @@ The data for the following services is *not* protected:
   historical catalogs
 - Orchestrator job history
 
-To be clear - you will have a functional PuppetDB instance on the warm spare master; but there will not 
-be any data populated!
+To be clear - you will have a functional PuppetDB instance on the warm spare master; but there will not
+be any historical data populated!
 
 Note that in future versions of Puppet Enterprise (some time long after
 2016.1.x), all of these features, including ones mentioned as protected above,
@@ -79,80 +80,102 @@ The following information is kept in-sync accross masters to provide failover ca
 | CA              | incron/rsync  | Near Realtime |
 | Node Classifier | rsync  | Hourly        |
 | RBAC Database   | rsync  | Hourly        |
-| Puppet Code     | r10k   | On-demand     |
+| Puppet Code     | r10k/code manaager   | On-demand     |
 
-Again, all services are functional on the passive master, but not all data is syncronized. 
+Again, all services are functional on the passive master, but not all data is syncronized.
 
 #### Deployment Strategies
-There is really only two ways to utilize this in your enviornment - DNS or using a Loadbalancer.  In either scenario you must set a common DNS alt name to
+There is really only two ways to utilize this in your enviornment - DNS or using a loadbalancer.  In either scenario you must set a common DNS alt name to
 be used by both masters to service client requests.
 
 DNS being the most straightforward, you would simply point your DNS record at your primary master until which point you'd like to failover.  In the load balancer
 scenario you can put both masters in a pool and set the priority to your primary master.  Leveraging health checks your masters can automatically failover if the 
 primary becomes unavailable.
 
+#### Functional State of a Passive or Active Master
+When a master is `active` it means that it is actively generating export data from the node classifier and rbac database via a scheduled cron job.  In addition, the active
+master also will trigger an rsync of the CA directories to the passive any time a certificate is signed or deleted.
+
+A `passive` master has all of its services enabled and is capable of serving client requests, however there are periods when services will be restarted.  There are 2 scheduled
+jobs on the passive master; one for restoring node classifier data and one for restoring the RBAC database.  During the NC restore processes no services are stopped as this 
+restore is performed via the API.  When the RBAC database restore job runs it will first validate it has a new export present in the database dump directory.  If it finds new
+data it will shut down PE services, restore the database from the export, and restart services.
+
+#### Determining Master State
+To determine which master is 'active', that is the one that is shipping data and not receiving it, you can simply query the `pe_failover_mode` fact via the following command:
+
+```
+# facter -p pe_failover_mode
+passive
+```
+
 #### Failover
 Failover is as simple as pointing your clients at the passive master.  Puppet runs will continue as usual with no impact.  For MCO and PXP, one puppet run must
-complete before these services will be restored.  This is due to the fact that the brokers for these services must be reconfigured.
-> **Note**
->
-> It is possible to make PXP and MCO work immediately if you use a common DNS name for the broker _AND_ match the passwords used on both masters via class overrides
->
+complete before these services will be restored.  This is due to the fact that the brokers and passwords for these services must be reconfigured.
 
 In an actual failure scenario where the primary master is offline you do not need to make any changes to the passive master to have it function properly.  If you've 
 manually failed over to the passive master and your primary is still online you **MUST** disable the data transfer scripts on the primary (see the reference section for
-details).  As long as there is no new data arriving on the passive master no services will be stopped.
+details).  As long as there is no new export data arriving on the passive master no services will be stopped.
+
+#### Promotion
+In order to promote a currently passive master you will need to update a couple of facts.  Edit the `/opt/puppetlabs/facter/facts.d/pe_failover.yaml` file and change the 
+mode from passive to active.  Also, you will need to set a new secondary master name.  Run `puppet agent -t` and the master will reconfigure itself.  If your not ready to 
+configure a new seconary simply leave this master configured as passive until you are - as mentioned above if there is no new data received this master will _NOT_ stop any services.
 
 #### Failback
-~~There is no mechanism for failback built into this module, however if the primary master was only offline temporarily and no classification or RBAC changes have been made 
-you can simply re-point your clients back to your primary master.  The only additional thing you would need to do is ensure that the latest codebase has been checked out 
-on your primary master prior to returning clients.~~
-
-_WIP_
+Assuming your original master went offline and has come back you have a few options.  If you've made no changes to classification or RBAC you can simply restart the master
+and depending on your deployment strategy either update DNS or wait for the loadbalancer to detect the restored master and client traffic will begin to move back to the 
+original primary.  If you've made changes you need to save you can _DEMOTE_ this host.  To do this you will update `/opt/puppetlabs/facter/facts.d/pe_failover.yaml` and set 
+the mode to passive and update the sshkey as described in the [setup](#setup) section of this guide.  Run `puppet agent -t` and the master will reconfigure itself.  Once you've
+allowed adequate time for the export/restore processes to run (just wait 2 hours) you can reverse this process and _DEMOTE_ your current active master and _PROMOTE_ the original.
 
 ## Setup
-Let's say we have two masters; the primary master we'll call 'mastera' and the secondary 'masterb'.
+For purposes of this guide we have two masters, one named mastera(primary) and one named masterb(passive).
 
 #### Prerequisites
 **On both masters**
 - Configure epel repositories (needed for incrond)
-  - puppet module install stahnma-epel
-  - puppet apply -e 'include epel'
+  - Example way of doing this
+    - `puppet module install stahnma-epel`
+    - ` puppet apply -e 'include epel`
 
 #### Installation instructions
 
-The process in order:
-
-*Master A*
+##### `Master A`
   - Install Puppet Enterprise
-    - When you do this - set your DNS alt names so that your clients can use a common name for both masters
+    - **REQUIRED** Make sure that you setup DNS alt names for your certificates!  If you do not do this you cannot use this failover mechanism.
+
   - Run pe_failover::active
     - puppet module install ipcrm-pe_failover
     - puppet apply -e 'include pe_failover; class{pe_failover::active: passive_master => "masterb.example.com"}'
-  - Copy the pe-transfer users public key used for copying files from primary master to secondary
+
+  - Copy the pe-transfer users public key for use when setting up the passive master
     - cat /home/pe-transfer/.ssh/pe_failover_id_rsa.pub and save it off somewhere
 
-*Master B*
+##### `Master B`
 
   - Install Puppet Agent ONLY
     - Do this via an package install directly and not via CURL install from primary master!!!
+
   - Run pe_failover::passive
     - puppet module install ipcrm-pe_failover
     - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
+
   - Force a sync of the CA directory
-    - On _Master A_
-      - Touch /etc/puppetlabs/puppet/ssl/ca/signed/forcesync
-    - On _Master B_ 
+    - On _**Master A**_
+      - touch /etc/puppetlabs/puppet/ssl/ca/signed/forcesync
+    - On _**Master B**_
       - Validate sync is working by using ls -ltr /etc/puppetlabs/puppet/ssl/ca/signed and checking for an empty file called forcesync
-      - IF it didn't work check for PE_FAILOVER messages in the syslog to determine the issue
-    - On _Master A_
-      - After successful validation remove the forcesync file (which will cause another sync and remove it on the remote side)
+      - You can purge the file on _**Master A**_ to force another sync and clean up
+
   - Run Puppet Enteprise installer
     - Use the _SAME_ dns alt names you used on the primary installation
 
+
+##### `Classification`
 Once you've run through the steps above you will have two functional masters with the same CA cert chain and the ability to
-fail back and fourth - however you need to permanently classify these hosts.  To do this via the NC create a group
-hierachy; one parent group that applies the base class and one for both the passive master and the active failover modes on Master A. 
+fail back and fourth.  As part of the setup (and more speicifically the pe_failover::active class) there were three groups setup in the 
+node classifier.  The are details below.
 
   - Group 1: pe-failover
     - Parent: All Nodes
@@ -160,19 +183,21 @@ hierachy; one parent group that applies the base class and one for both the pass
     - Class1: pe_failover
 
   - Group 2: pe-failover-active
-    - Parent: pe-failover
     - Rule1: pe_failover_mode=active
     - Class1: pe_failover::active
-      - Param1: passive_master=masterb.inf.puppetlabs.demo
 
   - Group 3: pe-failover-passive
-    - Parent: pe-failover
     - Rule1: pe_failover_mode=passive
     - Class1: pe_failover::passive
-      - Param1: auth_key=(contents of public key)
 
-Once these are configured you can wait an hour for the NC dump/restore process to happen automatically, or you can manually run
-the nc_dump(mastera), nc_sync(mastera), and finally restore_nc on masterb.
+These groups are created on mastera and will not be present on masterb until the first sync/restore process runs.  If your impatient you can 
+force the issue by running the nc_dump cron job on mastera and the nc_restore job on masterb.
+
+##### `Validation`
+At this point your masters are up and running, capable of serving catalogs for the same nodes.  The required data is being sync'd via cron jobs
+or incrond.  You can test your setup by pointing a client at either master (using the shared DNS alt name) and running `puppet agent -t` to prove 
+its working.  Keep in mind, if your using code manager or r10k on your primary you will still need to set that up on the passive master via the normal process.
+
 
 ## Reference
 
@@ -190,10 +215,13 @@ the nc_dump(mastera), nc_sync(mastera), and finally restore_nc on masterb.
 
 #### Facts
 ##### `pe_failover_mode`:
-This fact is set in pe_failover.yaml automatically based on the class assigned.  Its used for classification.  Valid values: _active,passive_
+This fact is set in `/opt/puppetlabs/facter/facts.d/pe_failover.yaml` automatically based on the class assigned.  Its used for classification.  Valid values: _active,passive_
 
 ##### `pe_failover_key`:
-This fact is set in pe_failover.yaml automatically when you include the pe_failover::passive class.  It stores the value of auth_key from the original run of puppet when you configured the master. 
+This fact is set in `/opt/puppetlabs/facter/facts.d/pe_failover.yaml` automatically when you include the pe_failover::passive class.  It stores the value of auth_key from the original run of puppet when you configured the master. 
+
+##### `pe_failover_passive_master`:
+This fact is set in `/opt/puppetlabs/facter/facts.d/pe_failover.yaml` automatically when you include pe_failover::passive the first time and it uses the supplied param to update the yaml file.  The fact is then used in subsequent runs for various scripts.
 
 #### Define
 | Define       | Purpose    |
@@ -202,10 +230,8 @@ This fact is set in pe_failover.yaml automatically when you include the pe_failo
 #### Scripts
 | Script       | Purpose    |
 | -----------| ------------------ |
-| [nc_dump.sh](templates/nc_dump.sh.erb) | Export Node Classifier contents on the primary master |
-| [sync_nc_dumps.sh](templates/sync_nc_dumps.sh.erb) | Copy the Node Classifier export from primary master to passive |
-| [db_dump.sh](templates/db_dump.sh.erb) | Export databases on the primary master |
-| [sync_dbs.sh](templates/sync_dbs.sh.erb) | Copy the exported databases from primary master to passive |
+| [nc_dump.sh](templates/nc_dump.sh.erb) | Export Node Classifier contents on the primary master and sync to passive |
+| [db_dump.sh](templates/db_dump.sh.erb) | Export databases on the primary master and sync to passive |
 | [rsync_exclude](templates/rsync_exclude.erb) | Creates a exclude file within the primary masters SSL dir for passive master certs|
 | [sync_certs.sh](templates/sync_certs.sh.erb) | Copy the latest CA contents from primary master to passive |
 | [update_passive_ca.sh](templates/update_passive_ca.sh.erb) | Update CA on Passive master from latest copy of primary master CA |
@@ -215,9 +241,7 @@ This fact is set in pe_failover.yaml automatically when you include the pe_failo
 | Job       | Master | Type    | Schedule (default) | Purpose |
 | --- | --- | --- | --- | --- |
 | nc_dump | primary | cron | Every hour @ 10 after | Calls [nc_dump.sh](templates/nc_dump.sh.erb)
-| nc_sync | primary | cron | Every hour @ 20 after | Calls [sync_nc_dumps.sh](templates/sync_nc_dumps.sh.erb)
 | *dbname*_db_dump | primary | cron | Every hour @ 10 after | Calls [db_dump.sh](templates/db_dump.sh.erb) for the given database
-| db_sync | primary  | cron | Every hour @ 20 after | Calls [sync_dbs.sh](templates/sync_dbs.sh.erb)
 | rest_nc_cron | passive | cron | Every hour on the hour | Calls [restore_nc.sh](templates/restore_nc.sh.erb)
 | rest_dbs_cron | passive | cron |  Every hour @ 3 after | Calls [restore_dbs.sh](templates/restore_dbs.sh.erb)
 
@@ -226,11 +250,24 @@ This fact is set in pe_failover.yaml automatically when you include the pe_failo
 | --- | --- | --- | --- |
 | primary | /etc/puppetlabs/puppet/ssl/ca/signed | On file create/delete | Calls [sync_certs.sh](templates/sync_certs.sh.erb)
 | passive | /opt/pe_failover/cert_dumps/latest/signed | On file create/delete | Calls [update_passive_ca.sh](templates/update_passive_ca.sh.erb)
+#### Logging
+All logging is done via the logger command to syslog.  All log messages have a common format:
+
+`PE_FAILOVER: <scriptname>.sh ---> [<status>] <message>`
+
+Example:
+
+```
+PE_FAILOVER: restore_dbs.sh ---> [SUCCESS] Attempting to start service pe-puppetserver...
+```
+
+Valid status messages are `SUCCESS`, `FAILURE`, and `WARNING`.
+
+If your troubleshooting a nice trick is to run `tail -f /var/log/messages|grep PE_FAILOVER &` so that when you run these scripts the log messages are brought to the console realtime. Additionally
+for monitoring purposes you can setup alerts based on finding any messages in syslog that match `PE_FAILOVER` and `FAILURE`.
+
 
 ## Known Issues
-- Changing pe_failover_directory will cause the facts pe_failover_mode and pe_failover_key to not get evaluated.  Workaround is to manually set those facts via facts.d
-
-## Parked for Now
 - Needs tested on other supported platforms for masters
-- Common DNS Name for NC Export
+- Exported resources are NOT protected and should not be used with this setup (or at least not used with purge resources)
 

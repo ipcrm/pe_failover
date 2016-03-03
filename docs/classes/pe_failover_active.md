@@ -10,6 +10,7 @@ The following private classes are included to perform the configuration:
 |[pe_failover::active::scripts](/manifests/active/scripts.pp)|
 |[pe_failover::active::cron](/manifests/active/cron.pp)|
 |[pe_failover::active::incron](/manifests/active/incron.pp)|
+|[pe_failover::active::classification](/manifests/active/classification.pp)|
 
 #### Parameters
 ##### `passive_master` **REQUIRED**
