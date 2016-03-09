@@ -15,7 +15,7 @@
     {
       "name": "WhatsARanjit-node_manager",
       "version_requirement": ">= 0.2.1"
-    },
+    }
   ],
   "operatingsystem_support": [
     {
