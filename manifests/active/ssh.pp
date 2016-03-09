@@ -1,6 +1,7 @@
 class pe_failover::active::ssh {
+
   # Validate the proivded passive_master is safe to use with execs
-  validate_re($pe_failover::active::passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}\b')
+  validate_re($pe_failover::active::passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.?)+[a-z]{2,}\b')
 
   # Create a new key for use with pe_failover
   exec{"create_ssh_key_for_${pe_failover::rsync_user}":
@@ -47,7 +48,7 @@ class pe_failover::active::ssh {
     require => File['/root/.ssh/known_hosts'],
   }
 
-  # In the event this is a promoted passive, delete the auth keys for the transfer user to prevent new data 
+  # In the event this is a promoted passive, delete the auth keys for the transfer user to prevent new data
   # from being written to this master
   file {"${pe_failover::rsync_user_home}/.ssh/authorized_keys":
     ensure  => absent,
