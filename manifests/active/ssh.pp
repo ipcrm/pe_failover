@@ -8,14 +8,14 @@ class pe_failover::active::ssh {
   }
 
   # Create a new key for use with pe_failover
-  exec{"create_ssh_key_for_${pe_failover::rsync_user}":
+  exec { "create_ssh_key_for_${pe_failover::rsync_user}":
     command => "ssh-keygen -t rsa -N '' -f ${pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
     user    => $pe_failover::rsync_user,
     creates => "${pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
   }
 
   # Create Known hosts file if doesn't exist(rsync_user)
-  file {"${pe_failover::rsync_user_home}/.ssh/known_hosts":
+  file { "${pe_failover::rsync_user_home}/.ssh/known_hosts":
     ensure  => present,
     owner   => $pe_failover::rsync_user,
     group   => $pe_failover::rsync_user,
@@ -24,21 +24,21 @@ class pe_failover::active::ssh {
   }
 
   # Add known host for our master
-  exec{'passive_master_key':
+  exec { 'passive_master_key':
     command => "ssh-keyscan -t rsa ${pe_failover::active::passive_master} >> ${pe_failover::rsync_user_home}/.ssh/known_hosts",
     unless  => "grep ${pe_failover::active::passive_master} ${pe_failover::rsync_user_home}/.ssh/known_hosts" ,
     require => File["${pe_failover::rsync_user_home}/.ssh/known_hosts"],
   }
 
   # Create Known hosts file if doesn't exist(root)
-  file {'/root/.ssh':
+  file { '/root/.ssh':
     ensure => directory,
     owner  => 'root',
     group  => 'root',
     mode   => '0700',
   }
 
-  file {'/root/.ssh/known_hosts':
+  file { '/root/.ssh/known_hosts':
     ensure => present,
     owner  => 'root',
     group  => 'root',
@@ -46,7 +46,7 @@ class pe_failover::active::ssh {
   }
 
   # Add known host for our master
-  exec{'root_passive_master_key':
+  exec { 'root_passive_master_key':
     command => "ssh-keyscan -t rsa ${pe_failover::active::passive_master} >> /root/.ssh/known_hosts",
     unless  => "grep ${pe_failover::active::passive_master} /root/.ssh/known_hosts" ,
     require => File['/root/.ssh/known_hosts'],
@@ -54,7 +54,7 @@ class pe_failover::active::ssh {
 
   # In the event this is a promoted passive, delete the auth keys for the transfer user to prevent new data
   # from being written to this master
-  file {"${pe_failover::rsync_user_home}/.ssh/authorized_keys":
+  file { "${pe_failover::rsync_user_home}/.ssh/authorized_keys":
     ensure  => absent,
   }
 
