@@ -3,9 +3,13 @@ class pe_failover::active::ssh {
   # Validate the proivded passive_master is safe to use with execs
   validate_re($pe_failover::active::passive_master, '\b([a-z0-9]+(-[a-z0-9]+)*\.?)+[a-z]{2,}\b')
 
+  Exec {
+    path => $::path,
+  }
+
   # Create a new key for use with pe_failover
   exec{"create_ssh_key_for_${pe_failover::rsync_user}":
-    command => "/bin/ssh-keygen -t rsa -N '' -f ${pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
+    command => "ssh-keygen -t rsa -N '' -f ${pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
     user    => $pe_failover::rsync_user,
     creates => "${pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
   }
@@ -21,8 +25,8 @@ class pe_failover::active::ssh {
 
   # Add known host for our master
   exec{'passive_master_key':
-    command => "/bin/ssh-keyscan -t rsa ${pe_failover::active::passive_master} >> ${pe_failover::rsync_user_home}/.ssh/known_hosts",
-    unless  => "/bin/grep ${pe_failover::active::passive_master} ${pe_failover::rsync_user_home}/.ssh/known_hosts" ,
+    command => "ssh-keyscan -t rsa ${pe_failover::active::passive_master} >> ${pe_failover::rsync_user_home}/.ssh/known_hosts",
+    unless  => "grep ${pe_failover::active::passive_master} ${pe_failover::rsync_user_home}/.ssh/known_hosts" ,
     require => File["${pe_failover::rsync_user_home}/.ssh/known_hosts"],
   }
 
@@ -43,8 +47,8 @@ class pe_failover::active::ssh {
 
   # Add known host for our master
   exec{'root_passive_master_key':
-    command => "/bin/ssh-keyscan -t rsa ${pe_failover::active::passive_master} >> /root/.ssh/known_hosts",
-    unless  => "/bin/grep ${pe_failover::active::passive_master} /root/.ssh/known_hosts" ,
+    command => "ssh-keyscan -t rsa ${pe_failover::active::passive_master} >> /root/.ssh/known_hosts",
+    unless  => "grep ${pe_failover::active::passive_master} /root/.ssh/known_hosts" ,
     require => File['/root/.ssh/known_hosts'],
   }
 
