@@ -9,12 +9,12 @@ declare -x PE_CA=$(puppet agent --configprint localcacert)
 declare -x NC_CURL_OPT="-s --cacert $PE_CA --cert $PE_CERT --key $PE_KEY --insecure"
 
 logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting NC Class Refresh"
-curl -X POST -H 'Content-Type: application/json' $NC_CURL_OPT --insecure https://<%= @fqdn %>:4433/classifier-api/v1/update-classes
+curl -X POST -H 'Content-Type: application/json' $NC_CURL_OPT "https://<%= @fqdn %>:4433/classifier-api/v1/update-classes"
 
 RET=$?
 if [ $RET -ne 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to refresh NC class data, error code: $RET"
   exit 1
 else
-	logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Finished NC Class Refresh"
+  logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Finished NC Class Refresh"
 fi
