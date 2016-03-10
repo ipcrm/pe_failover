@@ -14,7 +14,7 @@ class pe_failover::params {
   $incron_passive_ssl_condition  = "${cert_dump_path}/latest/ca/signed IN_CLOSE_WRITE,IN_DELETE"
   $pg_dump_command               = "${pg_bin_directory}/pg_dump"
   $timestamp_command             = '`/bin/date +"%Y-%m-%d-%H%M"`'
-  $md5sum_command                = '/bin/md5sum'
+  $md5sum_command                = 'md5sum'
   $pe_bkup_dbs                   = ['pe-rbac']
   $hour                          = '*'
   $minute                        = '10'

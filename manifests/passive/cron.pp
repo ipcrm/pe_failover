@@ -22,10 +22,14 @@ class pe_failover::passive::cron {
 
   # In the event this host was demoted, cleanup jobs from active
   # Remove cron jobs used by active master
-  cron { 'nc_dump': ensure => absent, }
+  cron { 'nc_dump':
+    ensure => absent,
+  }
 
   $::pe_failover::pe_bkup_dbs.each |$db| {
-    cron { "${db}_db_dump": ensure => absent, }
+    cron { "${db}_db_dump":
+      ensure => absent,
+    }
   }
 
 }
