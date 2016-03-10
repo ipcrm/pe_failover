@@ -24,7 +24,7 @@ fi
 
 <%= @rsync_command %> \
   -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' --exclude 'archive' \
-  <%= @dump_path %>/* <%= @rsync_user %>@<%= @passive_master %>:<%= @dump_path %>/ 
+  <%= @dump_path %>/* <%= @rsync_user %>@<%= @passive_master %>:<%= @dump_path %>/
 
 result="$?"
 if [[ $result -eq 0 ]]; then
