@@ -7,7 +7,7 @@ logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting sync of Puppet CA dir
 <%= @rsync_command %> \
   -e '/usr/bin/ssh -i <%= @rsync_user_ssh_id %>' \
   --exclude-from='<%= @rsync_ssl_dir %>/rsync_exclude' \
-  <%= @rsync_ssl_dir %> <%= @rsync_user %>@<%= @passive_master %>:<%= @cert_dump_path %>/latest/
+  <%= @rsync_ssl_dir %>/ <%= @rsync_user %>@<%= @passive_master %>:<%= @cert_dump_path %>/latest/
 
 result="$?"
 if [[ $result -eq 0 ]]; then
