@@ -171,6 +171,9 @@ For purposes of this guide we have two masters, one named mastera(primary) and o
     - On _**Master B**_
       - Validate sync is working by using ls -ltr /etc/puppetlabs/puppet/ssl/ca/signed and checking for an empty file called forcesync
       - You can purge the file on _**Master A**_ to force another sync and clean up
+    - On _**Master A**_
+      - Pad the CA serial to make sure newly signed certs don’t collide with the certs signed for the secondary master.  For example, set the current value in /etc/puppetlabs/puppet/ssl/ca/serial to 186A0(100,000)
+
 
   - Run Puppet Enteprise installer
     - Use the _SAME_ dns alt names you used on the primary installation
