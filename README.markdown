@@ -117,6 +117,12 @@ passive
 Failover is as simple as pointing your clients at the passive master.  Puppet runs will continue as usual with no impact.  For MCO and PXP, one puppet run must
 complete before these services will be restored.  This is due to the fact that the brokers and passwords for these services must be reconfigured.
 
+> **Note: MCollective and PXP Failover**
+>
+> There is an alternative option for failing over these services, see [here](docs/failover/mco_pxp_failover.md) for details.  This method is required if your leveraging 
+> cached catalogs (for example with Application Orchestration) due to the fact that these clients will not retrieve new catalogs on regular timers.
+>
+
 In an actual failure scenario where the primary master is offline you do not need to make any changes to the passive master to have it function properly.  If you've 
 manually failed over to the passive master and your primary is still online you **MUST** disable the data transfer scripts on the primary (see the reference section for
 details).  As long as there is no new export data arriving on the passive master no services will be stopped.
