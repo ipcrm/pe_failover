@@ -156,7 +156,8 @@ For purposes of this guide we have two masters, one named mastera(primary) and o
     - **REQUIRED** Make sure that you setup DNS alt names for your certificates!  If you do not do this you cannot use this failover mechanism.
 
   - Run pe_failover::active
-    - puppet module install ipcrm-pe_failover
+    - Clone this repo into your production code directory
+      - cd /etc/puppetlabs/code/environments/production; git clone https://github.com/ipcrm/pe_failover.git
     - puppet apply -e 'include pe_failover; class{pe_failover::active: passive_master => "masterb.example.com"}'
 
   - Copy the pe-transfer users public key for use when setting up the passive master
@@ -168,7 +169,8 @@ For purposes of this guide we have two masters, one named mastera(primary) and o
     - Do this via an package install directly and not via CURL install from primary master!!!
 
   - Run pe_failover::passive
-    - puppet module install ipcrm-pe_failover
+    - Clone this repo into your production code directory
+      - cd /etc/puppetlabs/code/environments/production; git clone https://github.com/ipcrm/pe_failover.git
     - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
 
   - Force a sync of the CA directory
