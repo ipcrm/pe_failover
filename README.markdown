@@ -167,6 +167,7 @@ For purposes of this guide we have two masters, one named mastera(primary) and o
 
   - Install Puppet Agent ONLY
     - Do this via an package install directly and not via CURL install from primary master!!!
+    - *NOTE*: The agent must match the version installed on the primary master EXACTLY!
 
   - Run pe_failover::passive
     - Clone this repo into your production code directory
