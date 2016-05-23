@@ -171,7 +171,7 @@ For purposes of this guide we have two masters, one named mastera(primary) and o
   - Run pe_failover::passive
     - Clone this repo into your production code directory
       - cd /etc/puppetlabs/code/environments/production; git clone https://github.com/ipcrm/pe_failover.git
-    - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"
+    - puppet apply -e 'include pe_failover; class{pe_failover::passive: auth_key => "_paste your copied key here_"}'
 
   - Force a sync of the CA directory
     - On _**Master A**_
