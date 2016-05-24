@@ -1,7 +1,6 @@
 class pe_failover::params {
   $rsync_user                    = 'pe-transfer'
   $rsync_user_home               = "/home/${rsync_user}"
-  $rsync_user_ssh_id             = "${rsync_user_home}/.ssh/pe_failover_id_rsa"
   $rsync_ssl_dir                 = '/etc/puppetlabs/puppet/ssl'
   $rsync_command                 = 'rsync -au --delete'
   $pe_failover_directory         = '/opt/pe_failover'

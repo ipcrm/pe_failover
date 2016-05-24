@@ -18,7 +18,7 @@ class pe_failover (
   String $restore_monthday             = $::pe_failover::params::restore_monthday,
   String $rsync_user                   = $::pe_failover::params::rsync_user,
   String $rsync_user_home              = $::pe_failover::params::rsync_user_home,
-  String $rsync_user_ssh_id            = $::pe_failover::params::rsync_user_ssh_id,
+  String $rsync_user_ssh_id            = "${::pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
   String $rsync_ssl_dir                = $::pe_failover::params::rsync_ssl_dir,
   String $rsync_command                = $::pe_failover::params::rsync_command,
 ) inherits pe_failover::params{
