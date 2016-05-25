@@ -148,6 +148,9 @@ For purposes of this guide we have two masters, one named mastera(primary) and o
   - Example way of doing this
     - `puppet module install stahnma-epel`
     - ` puppet apply -e 'include epel`
+- Required Modules
+  - puppetlabs-stdlib
+  - WhatsARanjit-node_manager
 
 #### Installation instructions
 
