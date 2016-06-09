@@ -1,5 +1,6 @@
 class pe_failover::passive (
-  String $auth_key = $::pe_failover_key
+  String $pdb_peer = $::pe_failover_pdb_peer,
+  String $auth_key = $::pe_failover_key,
 ) inherits pe_failover::params{
 
   if $auth_key == '' {
@@ -12,5 +13,12 @@ class pe_failover::passive (
   contain ::pe_failover::passive::scripts
   contain ::pe_failover::passive::cron
   contain ::pe_failover::passive::incron
+
+  # If PDB Peer is set, enable PDB Replication
+  if !empty($pdb_peer) {
+    class {'::pe_failover::pdb_replication':
+      pdb_peer => $pdb_peer,
+    }
+  }
 
 }

@@ -1,9 +1,10 @@
 class pe_failover::passive::files {
 
   # Set Vars for template
-  $pe_failover_mode_var = 'passive'
-  $pe_failover_key_var  = $::pe_failover::passive::auth_key
-  $pe_failover_passive_master  = ''
+  $pe_failover_mode_var           = 'passive'
+  $pe_failover_key_var            = $::pe_failover::passive::auth_key
+  $pe_failover_pdb_peer_var       = $::pe_failover::passive::pdb_peer
+  $pe_failover_passive_master_var = ''
 
   # Create Required CA directories
   $pe_dirs = [

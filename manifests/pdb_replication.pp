@@ -1,0 +1,42 @@
+class pe_failover::pdb_replication (
+  $pdb_peer,
+  $sync_interval = '2m',
+  $confdir       = $puppet_enterprise::params::puppetdb_confdir,
+){
+
+  if defined(Class['Puppet_enterprise']){
+    # Most of this class is derived from puppet_enterprise::puppetdb::sync_ini
+    Pe_ini_setting {
+      ensure  => present,
+      path    => "${confdir}/sync.ini",
+      section => 'sync',
+      require => File["${confdir}/sync.ini"],
+      notify  => Service['pe-puppetdb'],
+    }
+
+    file { "${confdir}/sync.ini":
+      ensure  => present,
+      owner   => 'pe-puppetdb',
+      group   => 'pe-puppetdb',
+      mode    => '0640',
+      require => Package['pe-puppetdb'],
+    }
+
+    pe_ini_setting {'puppetdb_sync_server_urls':
+      setting => 'server_urls',
+      value   => "https://${pdb_peer}:8081",
+    }
+
+    pe_ini_setting {'puppetdb_sync_intervals':
+      setting => 'intervals',
+      value   => $sync_interval,
+    }
+
+    puppet_enterprise::certs::puppetdb_whitelist_entry { "pe_failover-${pdb_peer}-for-puppetdb-whitelist":
+      certname => $pdb_peer,
+      tag      => $::settings::server,
+    }
+
+  }
+
+}

@@ -1,5 +1,6 @@
 class pe_failover::active (
-  String $passive_master = $::pe_failover_passive_master
+  String $passive_master = $::pe_failover_passive_master,
+  String $pdb_peer       = $::pe_failover_pdb_peer
 ) inherits pe_failover::params {
 
   if $passive_master == '' {
@@ -14,5 +15,12 @@ class pe_failover::active (
   contain ::pe_failover::active::incron
   contain ::pe_failover::active::files
   contain ::pe_failover::active::classification
+
+  # If PDB Peer is set, enable PDB Replication
+  if !empty($pdb_peer) {
+    class {'::pe_failover::pdb_replication':
+      pdb_peer => $pdb_peer,
+    }
+  }
 
 }
