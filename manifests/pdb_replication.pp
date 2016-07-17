@@ -1,7 +1,8 @@
 class pe_failover::pdb_replication (
   $pdb_peer,
-  $sync_interval = '2m',
-  $confdir       = $puppet_enterprise::params::puppetdb_confdir,
+  $sync_interval  = '2m',
+  $confdir        = $puppet_enterprise::params::puppetdb_confdir,
+  $cert_whitelist = '/etc/puppetlabs/puppetdb/certificate-whitelist',
 ){
 
   if defined(Class['Puppet_enterprise']){
@@ -32,9 +33,11 @@ class pe_failover::pdb_replication (
       value   => $sync_interval,
     }
 
-    puppet_enterprise::certs::puppetdb_whitelist_entry { "pe_failover-${pdb_peer}-for-puppetdb-whitelist":
+    puppet_enterprise::certs::whitelist_entry { "pdb_whitelist entry: ${pdb_peer}":
       certname => $pdb_peer,
-      tag      => $::settings::server,
+      target   => $cert_whitelist,
+      notify   => Service['pe-puppetdb'],
+      require  => Class['puppet_enterprise::profile::puppetdb'],
     }
 
   }
