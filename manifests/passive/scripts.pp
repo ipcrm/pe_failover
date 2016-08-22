@@ -9,6 +9,12 @@ class pe_failover::passive::scripts {
   $rsync_command     = $::pe_failover::rsync_command
   $rsync_ssl_dir     = $::pe_failover::rsync_ssl_dir
 
+  # Install the NCIO command
+  package{'ncio':
+    ensure   => present,
+    provider => 'puppet_gem',
+  }
+
   # Create DB Restore Script
   file { 'db_rest_script':
     ensure  => file,
