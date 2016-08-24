@@ -221,9 +221,8 @@ its working.  Keep in mind, if your using code manager or r10k on your primary y
 ### Experimental
 > *NOTE*: These features of PDB are currently NOT supported
 >
-> *NOTE*: This functionality will only work with 2016.2+
+> *NOTE*: This functionality will only work with future versions of PE 
 >
-> *NOTE*: Currently this relies on unreleased changes to the `puppet_enterprise` module; currently found in this [branch](https://github.com/ipcrm/puppetlabs-puppet_enterprise/tree/ipcrm_puppetdb_active_active)
 
 Using the syntax shown below you can enable PuppetDB replication to enable shipping of reports, catalogs, facts, and of course exported resouces bidirectionally.  This eliminates the limitations with this module for failover.
 
