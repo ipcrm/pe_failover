@@ -2,6 +2,7 @@
 SECONDARY_MASTER=<%= @fqdn %>
 BKUP_FILE="<%= @nc_dump_path %>/nc_dump.latest.json"
 SCRIPTNAME=$(basename $0)
+export PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
 
 logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Started."
 
