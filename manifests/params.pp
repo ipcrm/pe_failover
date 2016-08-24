@@ -23,48 +23,57 @@ class pe_failover::params {
   $restore_nc_minute             = '0'
   $restore_monthday              = '*'
 
+  case $::osfamily {
+    'RedHat','Suse': { $nologin  = '/sbin/nologin' }
+    'Debian': { $nologin  = '/usr/sbin/nologin' }
+    default: {
+      abort('Unsupported OS Type')
+    }
+  }
+
+
   $pe_users = {
     'pe-postgres'               =>
         {
           'description' => 'Puppet Enterprise PostgreSQL Server',
           'home'        => '/opt/puppetlabs/server/data/postgresql',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     'pe-orchestration-services' =>
         {
           'description' => 'pe-orchestration-services daemon',
           'home'        => '/opt/puppetlabs/server/data/orchestration-services',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     'pe-console-services'       =>
         {
           'description' => 'pe-console-services daemon',
           'home'        => '/opt/puppetlabs/server/data/console-services',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     'pe-puppetdb'               =>
         {
           'description' => 'pe-puppetdb daemon',
           'home'        => '/opt/puppetlabs/server/data/puppetdb',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     'pe-puppet'                =>
         {
           'description' => 'pe-puppetserver daemon',
           'home'        => '/opt/puppetlabs/server/data/puppetserver',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     'pe-webserver'             =>
         {
           'description' => 'Puppet Enterprise Webserver User',
           'home'        => '/var/cache/puppetlabs/nginx',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     'pe-activemq'              =>
         {
           'description' => 'Puppet Enterprise Apache Activemq',
           'home'        => '/opt/puppetlabs/server/data/activemq',
-          'shell'       => '/sbin/nologin',
+          'shell'       => $nologin,
         },
     }
 }
