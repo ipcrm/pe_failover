@@ -6,8 +6,8 @@ SCRIPTNAME=$(basename $0)
 manage_service() {
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Attempting to ${1} service ${2}..."
 
-  [ $1 == 'stop' ]  && ACTION='stopped'
-  [ $1 == 'start' ] && ACTION='running'
+  [ $1 = 'stop' ]  && ACTION='stopped'
+  [ $1 = 'start' ] && ACTION='running'
 
   OUTPUT=$(/opt/puppetlabs/bin/puppet resource service $2 ensure=$ACTION)
   if [ $? -ne 0 ]; then
