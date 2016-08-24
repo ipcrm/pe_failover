@@ -1,6 +1,7 @@
 class pe_failover::active::incron {
+
   # Setup incrond
-  service { 'incrond':
+  service { $::pe_failover::incron_service_name:
     ensure    => running,
     enable    => true,
     subscribe => [

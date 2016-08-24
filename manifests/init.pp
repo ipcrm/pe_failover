@@ -21,6 +21,7 @@ class pe_failover (
   String $rsync_user_ssh_id            = "${::pe_failover::rsync_user_home}/.ssh/pe_failover_id_rsa",
   String $rsync_ssl_dir                = $::pe_failover::params::rsync_ssl_dir,
   String $rsync_command                = $::pe_failover::params::rsync_command,
+  String $incron_service_name          = $::pe_failover::params::incron_service_name,
 ) inherits pe_failover::params{
 
   # Ensure PE users area present - this will only imnpact the passive during initial setup
@@ -33,7 +34,7 @@ class pe_failover (
     }
   }
 
-  # Setup transfer user 
+  # Setup transfer user
   user {$rsync_user:
     ensure     => present,
     managehome => true,

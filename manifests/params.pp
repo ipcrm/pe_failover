@@ -24,8 +24,18 @@ class pe_failover::params {
   $restore_monthday              = '*'
 
   case $::osfamily {
-    'RedHat','Suse': { $nologin  = '/sbin/nologin' }
-    'Debian': { $nologin  = '/usr/sbin/nologin' }
+    'RedHat': {
+      $nologin  = '/sbin/nologin'
+      $incron_service_name = 'incrond'
+    }
+    'Suse': {
+      $nologin  = '/sbin/nologin'
+      $incron_service_name = 'incron'
+    }
+    'Debian': {
+      $nologin  = '/usr/sbin/nologin'
+      $incron_service_name = 'incron'
+    }
     default: {
       abort('Unsupported OS Type')
     }
