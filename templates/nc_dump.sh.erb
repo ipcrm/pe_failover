@@ -7,7 +7,7 @@ PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
 logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting NC Export"
 ncio -c "/etc/puppetlabs/puppet/ssl/certs/${PRIMARY_MASTER}.pem" \
   -k "/etc/puppetlabs/puppet/ssl/private_keys/${PRIMARY_MASTER}.pem" \
-  --uri="https://<%= @console_host %>:4433/classifier-api/v1" backup | ncio transform \
+  --uri="https://${PRIMARY_MASTER}:4433/classifier-api/v1" backup | ncio transform \
   --hostname $PRIMARY_MASTER:$SECONDARY_MASTER \
   -o <%= @nc_dump_path %>/nc_dump.latest.json
 
