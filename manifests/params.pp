@@ -66,7 +66,7 @@ class pe_failover::params {
     'pe-webserver'             =>
         {
           'description' => 'Puppet Enterprise Webserver User',
-          'home'        => '/var/cache/puppetlabs/nginx',
+          'home'        => '/opt/puppetlabs/server/apps/nginx/share',
           'shell'       => $nologin,
         },
     'pe-activemq'              =>
