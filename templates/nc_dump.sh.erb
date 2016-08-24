@@ -21,7 +21,7 @@ else
     <%= @nc_dump_path %>/* <%= @rsync_user %>@<%= @passive_master %>:<%= @nc_dump_path %>/
 
   result="$?"
-  if [[ $result -eq 0 ]]; then
+  if [ $result -eq 0 ]; then
     logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed sync of Puppet NC Dump directory to <%= @passive_master %>"
   else
     logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to sync. Exit code is: ${result}"

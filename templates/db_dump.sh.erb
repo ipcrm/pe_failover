@@ -7,7 +7,7 @@ logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting dump of database: <%=
 # Create Export
 su - pe-postgres -s '/bin/bash' -c "<%= @pg_dump_command %> -C <%= @db_name %> -f <%= @dump_path %>/<%= @db_name %>/<%= @db_name %>_latest.psql"
 result="$?"
-if [[ $result -eq 0 ]]; then
+if [ $result -eq 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed dump of database: <%= @db_name %>"
 else
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to dump database <%= @db_name %>. Exit code is: ${result}"
@@ -27,7 +27,7 @@ logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting sync of Puppet DB Dum
   <%= @dump_path %>/* <%= @rsync_user %>@<%= @passive_master %>:<%= @dump_path %>/
 
 result="$?"
-if [[ $result -eq 0 ]]; then
+if [ $result -eq 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed sync of Puppet DB Dump directory to <%= @passive_master %>"
 else
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to sync. Exit code is: ${result}"
