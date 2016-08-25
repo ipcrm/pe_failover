@@ -27,14 +27,17 @@ class pe_failover::params {
     'RedHat': {
       $nologin  = '/sbin/nologin'
       $incron_service_name = 'incrond'
+      $webserver_home = '/var/cache/puppetlabs/nginx'
     }
     'Suse': {
       $nologin  = '/sbin/nologin'
       $incron_service_name = 'incron'
+      $webserver_home = '/var/cache/puppetlabs/nginx'
     }
     'Debian': {
       $nologin  = '/usr/sbin/nologin'
       $incron_service_name = 'incron'
+      $webserver_home = '/opt/pe_failover/scripts/restore_dbs.sh'
     }
     default: {
       abort('Unsupported OS Type')
@@ -76,7 +79,7 @@ class pe_failover::params {
     'pe-webserver'             =>
         {
           'description' => 'Puppet Enterprise Webserver User',
-          'home'        => '/opt/puppetlabs/server/apps/nginx/share',
+          'home'        => $webserver_home,
           'shell'       => $nologin,
         },
     'pe-activemq'              =>
