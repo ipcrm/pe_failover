@@ -1,6 +1,6 @@
 class pe_failover::active::classification {
 
-  package{'puppetclassify':
+  package{['puppetclassify','ncio']:
     ensure   => present,
     provider => 'puppet_gem',
   }

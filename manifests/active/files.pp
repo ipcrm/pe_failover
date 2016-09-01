@@ -1,11 +1,12 @@
 class pe_failover::active::files {
 
   # Set Vars for template
-  $pe_failover_mode_var = 'active'
-  $pe_failover_key_var  = ''
+  $pe_failover_mode_var           = 'active'
+  $pe_failover_key_var            = ''
   $pe_failover_passive_master_var = $::pe_failover::active::passive_master
+  $pe_failover_pdb_peer_var       = $::pe_failover::active::pdb_peer
 
-  file {"/opt/puppetlabs/facter/facts.d/pe_failover.yaml":
+  file {'/opt/puppetlabs/facter/facts.d/pe_failover.yaml':
     ensure  => present,
     owner   => root,
     group   => root,

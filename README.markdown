@@ -16,7 +16,8 @@
       * [Master B](#master-b)
       * [Classification](#classification)
       * [Validation](#validation)
-3. [Reference](#reference)
+3. [Experimental](#experimental)
+4. [Reference](#reference)
     * [Users](#users)
     * [Public Classes](#public-classes)
     * [Defined Types](#define)
@@ -24,7 +25,7 @@
     * [Crons](#crons)
     * [Incron](#incron)
     * [Logging](#logging)
-4. [Known Issues](#known-issues)
+5. [Known Issues](#known-issues)
 
 ## Overview
 
@@ -217,6 +218,36 @@ At this point your masters are up and running, capable of serving catalogs for t
 or incrond.  You can test your setup by pointing a client at either master (using the shared DNS alt name) and running `puppet agent -t` to prove 
 its working.  Keep in mind, if your using code manager or r10k on your primary you will still need to set that up on the passive master via the normal process.
 
+### Experimental
+> *NOTE*: These features of PDB are currently NOT supported
+>
+> *NOTE*: This functionality will only work with future versions of PE 
+>
+
+Using the syntax shown below you can enable PuppetDB replication to enable shipping of reports, catalogs, facts, and of course exported resouces bidirectionally.  This eliminates the limitations with this module for failover.
+
+To use, go through all the steps to setup 'standard' pe_failover, and then run these puppet apply jobs, followed by a `puppet agent -t`:
+
+- Master A
+
+```
+puppet apply -e 'include pe_failover; class{pe_failover::active: passive_master => "masterb.example.com", pdb_peer => "masterb.example.com"}'
+```
+
+- Master B
+
+```
+puppet apply -e 'include pe_failover; class{pe_failover::passive: pdb_peer => "mastera.example.com", auth_key => "_paste your copied key here_"}'
+```
+
+_NOTE_: When you run these apply jobs you will get a warning like this:
+
+```
+Warning: Undefined variable 'puppet_enterprise::params::puppetdb_confdir'; class puppet_enterprise::params has not been evaluated
+   (file & line not available)
+```
+This can safely be ignored.  After running the apply (which really just sets up facts) you will need to execute another `puppet agent -t` to finialize the setup.  This second run will actually setup the PDB whitelist entry, configure sync.ini, and restart pe-puppetdb.  By default PDB replication is configured to run every 2 minutes (configurable inside of pe_failover::pdb_replication).  After a few minutes you will see all reports present in both of your masters.
+
 
 ## Reference
 
@@ -231,6 +262,7 @@ its working.  Keep in mind, if your using code manager or r10k on your primary y
 | [pe_failover::active](docs/classes/pe_failover_active.md) | Used to classify the active master.  Configures users, scripts, dirs, etc.. |
 | [pe_failover::passive](docs/classes/pe_failover_passive.md) | Used to classify the passive master.  Configures users, scripts, dirs, etc.. |
 | [pe_failover::params](docs/classes/pe_failover_passive.md) | Default param values |
+| pe_failover::pdb_replication| Used to configure PDB replication between masters |
 
 #### Facts
 ##### `pe_failover_mode`:
@@ -287,5 +319,4 @@ for monitoring purposes you can setup alerts based on finding any messages in sy
 
 
 ## Known Issues
-- Needs tested on other supported platforms for masters
 - Exported resources are NOT protected and should not be used with this setup (or at least not used with purge resources)

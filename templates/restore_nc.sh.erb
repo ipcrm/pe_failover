@@ -2,17 +2,15 @@
 SECONDARY_MASTER=<%= @fqdn %>
 BKUP_FILE="<%= @nc_dump_path %>/nc_dump.latest.json"
 SCRIPTNAME=$(basename $0)
+export PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
 
 logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Started."
 
 if [ -f $BKUP_FILE ]; then
-  PATH="/opt/puppetlabs/bin:/opt/puppetlabs/puppet/bin:/opt/puppet/bin:$PATH"
-  declare -x PE_CERT=$(puppet agent --configprint hostcert)
-  declare -x PE_KEY=$(puppet agent --configprint hostprivkey)
-  declare -x PE_CA=$(puppet agent --configprint localcacert)
-  declare -x NC_CURL_OPT="-s --cacert $PE_CA --cert $PE_CERT --key $PE_KEY -X POST"
+  ncio -c "/etc/puppetlabs/puppet/ssl/certs/${SECONDARY_MASTER}.pem" \
+    -k "/etc/puppetlabs/puppet/ssl/private_keys/${SECONDARY_MASTER}.pem" \
+    --uri="https://${SECONDARY_MASTER}:4433/classifier-api/v1" restore -f $BKUP_FILE
 
-  OUTPUT=$(curl $NC_CURL_OPT -T $BKUP_FILE https://$SECONDARY_MASTER:4433/classifier-api/v1/import-hierarchy)
   if [ $? -eq 0 ]; then
     mv $BKUP_FILE <%= @nc_dump_path %>/archive/nc_dump.<%= @timestamp_command %>.json
     if [ $? -ne 0 ]; then

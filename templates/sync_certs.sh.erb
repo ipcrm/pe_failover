@@ -10,7 +10,7 @@ logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Starting sync of Puppet CA dir
   <%= @rsync_ssl_dir %>/ <%= @rsync_user %>@<%= @passive_master %>:<%= @cert_dump_path %>/latest/
 
 result="$?"
-if [[ $result -eq 0 ]]; then
+if [ $result -eq 0 ]; then
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [SUCCESS] Completed sync of Puppet CA directory to <%= @passive_master %>"
 else
   logger "PE_FAILOVER: ${SCRIPTNAME} ---> [FAILURE] Failed to sync. Exit code is: ${result}"

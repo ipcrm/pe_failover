@@ -1,7 +1,7 @@
 class pe_failover::passive::incron {
 
   # Setup CA Update Incron process
-  service { 'incrond':
+  service { $::pe_failover::incron_service_name:
     ensure    => running,
     enable    => true,
     subscribe => [
