@@ -1,6 +1,6 @@
 class pe_failover::passive (
-  String $pdb_peer = $::pe_failover_pdb_peer,
   String $auth_key = $::pe_failover_key,
+  String $pdb_peer = pick_default($::pe_failover_pdb_peer,'')
 ) inherits pe_failover::params{
 
   if $auth_key == '' {

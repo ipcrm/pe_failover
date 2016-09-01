@@ -1,6 +1,6 @@
 class pe_failover::active (
   String $passive_master = $::pe_failover_passive_master,
-  String $pdb_peer       = $::pe_failover_pdb_peer
+  String $pdb_peer       = pick_default($::pe_failover_pdb_peer,'')
 ) inherits pe_failover::params {
 
   if $passive_master == '' {
