@@ -319,5 +319,4 @@ for monitoring purposes you can setup alerts based on finding any messages in sy
 
 
 ## Known Issues
-- Needs tested on other supported platforms for masters
 - Exported resources are NOT protected and should not be used with this setup (or at least not used with purge resources)
