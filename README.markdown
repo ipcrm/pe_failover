@@ -1,3 +1,5 @@
+# WARNING: This module is deprecated.  You do NOT need this if you are running PE 2016.5 or above, as this functionality is now built-in.
+
 #### Table of Contents
 
 1. [Overview](#overview)
@@ -26,11 +28,6 @@
     * [Incron](#incron)
     * [Logging](#logging)
 5. [Known Issues](#known-issues)
-
-<aside class="warning">
-WARNING: This module is deprecated.  You do NOT need this if you are running PE 2016.5 or above, as this functionality is now built-in.
-</aside>
-
 
 
 ## Overview
